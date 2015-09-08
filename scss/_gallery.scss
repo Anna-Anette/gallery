@@ -1,0 +1,133 @@
+#swatches {
+    span {
+        border: 2px solid red;
+        cursor: pointer;
+        display: inline-block;
+        padding: 5px;
+    }
+}
+.main {
+    margin: 0 auto 0 0;
+    padding: 30px;
+}
+img { max-width: 100%; display: block; }
+
+.js-main-image-wrapper {
+    position: relative;
+}
+.product-view-gallery {
+    margin-bottom: 20px;
+    .js-loader {
+        @include abs(0, 0, 0, 0);
+        background-color: #ddd;
+        opacity: .9;
+        //display: none;
+    }
+    .js-loader span {
+        background: url("../images/loader-dark.gif") center center no-repeat #ddd;
+        position: absolute;
+        width: 32px;
+        height: 32px;
+        margin-top: -16px;
+        margin-left: -16px;
+        top: 50%;
+        left: 50%;
+    }
+    .bx-wrapper {
+        margin-bottom: 0;
+    }
+}
+
+.product-view-image-thumbs {
+    .product-image-thumb {
+        @include mobile {
+            display: none;
+            &.product-video-thumb {
+                display: block;
+            }
+        }
+    }
+}
+.thumb-element {
+    display: block;
+    &.active-thumb {
+        outline: 2px solid $color-base;
+        @include mobile {
+            outline: none;
+        }
+    }
+}
+.is-hidden {
+    display: none;
+}
+#mobileSlider {
+    display: none;
+    @include mobile {
+        display: block;
+    }
+}
+.product-view-image-main {
+    &.mobile-hidden {
+        @include mobile {
+            display: none;
+        }
+    }
+}
+.product-view-gallery {
+    @include mobile {
+        margin-bottom: 20px;
+    }
+}
+.product-view-gallery-image {
+    display: none;
+}
+.product-view-subtitle {
+    font-size: 12px;
+    line-height: 16px;
+    margin-bottom: 10px;
+    margin-top: 20px;
+    @include mobile {
+        display: none;
+    }
+}
+.product-view-image-thumbs {
+    @include block-grid(6);
+    margin-top: 10px;
+    .product-image-thumb {
+        padding-top: 10px;
+        padding-bottom: 0;
+    }
+    @include tablet {
+        @include block-grid(3);
+        .product-image-thumb {
+            padding-top: 20px;
+        }
+    }
+    .product-video-thumb {
+        cursor: pointer;
+        @include mobile {
+            &:nth-of-type(1n) { clear: none; }
+            &:nth-of-type(3n+1) { clear: both; }
+        }
+    }
+    @include mobile {
+        margin-bottom: 20px;
+    }
+}
+.product-video-link {
+    position: relative;
+    display: block;
+    @include mobile {
+        display: inline-block;
+        max-width: 100%;
+    }
+    &:after {
+        content: '';
+        @include abs(50%, auto, auto, 50%);
+        margin-left: -14px;
+        margin-top: -14px;
+        @include sprite($icon-video);
+    }
+}
+
+/* EO Product View - Gallery */

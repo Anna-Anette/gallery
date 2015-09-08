@@ -1,0 +1,150 @@
+/* BX General */
+.bx-wrapper {
+    position: relative;
+    margin: 0 auto 50px;
+    padding: 0;
+    *zoom: 1;
+}
+
+.bx-wrapper img {
+    max-width: 100%;
+    display: block;
+    margin: 0 auto;
+    height: auto;
+}
+/* EO BX General */
+
+/* Loader */
+.bx-loading {
+    min-height: 50px;
+    background: url("../images/loader-dark.gif") center center no-repeat #fff;
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 90;
+}
+/* EO Loader */
+
+/* Direction Control (prev/next) */
+.bx-controls-direction a {
+    @include decore-reset;
+    position: absolute;
+    top: 50%;
+    margin-top: -14px;
+    outline: 0;
+    z-index: 80;
+}
+.bx-controls-direction a.disabled { display: none; }
+
+.bx-prev {
+    @include sprite($icon-arrow-left-small);
+    left: -36px;
+    @include tablet { left: -32px; }
+    @include mobile { left: 5px; }
+}
+.bx-next {
+    @include sprite($icon-arrow-right-small);
+    right: -36px;
+    @include tablet { right: -32px; }
+    @include mobile { right: 5px; }
+}
+.bx-prev:hover, .bx-next:hover { opacity: .8; }
+/* EO Direction Control (prev/next) */
+
+/* Pager */
+.bx-pager,
+.bx-controls-auto {
+    position: absolute;
+    width: 100%;
+}
+.bx-pager {
+    text-align: center;
+    font-size: 12px;
+    line-height: 20px;
+    font-weight: bold;
+    padding-top: 15px;
+    z-index: 85;
+}
+
+.bx-pager-item,
+.bx-controls-auto-item {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 15px;
+    *zoom: 1;
+    *display: inline;
+}
+.bx-pager-item {
+    @include decore-reset;
+    a {
+        display: block;
+        width: 8px;
+        height: 8px;
+        background: $color-base-mod;
+        border-radius: 5px;
+        cursor: pointer;
+        text-indent: -9999px;
+    }
+    a.active {
+        background: $color-base;
+        cursor: default;
+    }
+    &:last-child { margin: 0; }
+}
+/* EO Pager */
+
+/* Auto Controls (start/stop) */
+.bx-controls-auto {
+    text-align: center;
+    a {
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: bold;
+        display: block;
+        outline: 0;
+    }
+    a:before {
+        font-size: 20px;
+        margin-right: 5px;
+    }
+    .bx-start:before { content: "\f04b"; }
+    .bx-stop:before { content: "\f04c"; }
+}
+
+.bx-start:hover, .bx-start.active,
+.bx-stop:hover, .bx-stop.active {
+    opacity: 0.8;
+}
+/* EO Auto Controls (start/stop) */
+
+/* Pager with auto-controls hybrid layout */
+.bx-controls.bx-has-controls-auto.bx-has-pager .bx-pager {
+    text-align: left;
+    width: 50%;
+    left: 0;
+}
+.bx-controls.bx-has-controls-auto.bx-has-pager .bx-controls-auto {
+    text-align: right;
+    width: 50%;
+    right: 0;
+}
+/* EO Pager with auto-controls hybrid layout */
+
+/* Image Captions */
+.bx-caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    background: rgba(80, 80, 80, 0.75);
+    width: 100%;
+}
+
+.bx-caption span {
+    color: #fff;
+    display: block;
+    font-size: 12px;
+    padding: 10px;
+}
+/* EO Image Captions */

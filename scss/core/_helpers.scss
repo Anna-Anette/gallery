@@ -1,0 +1,116 @@
+// Helpers
+@mixin clearfix {
+    *zoom: 1;
+    &:before, &:after { content: " "; display: table; }
+    &:after { clear: both; }
+}
+
+@mixin box-sizing($box-model) {
+    -webkit-box-sizing: $box-model;
+    -moz-box-sizing: $box-model;
+    box-sizing: $box-model;
+}
+
+@mixin user-select {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+
+@mixin no-user-select {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+@mixin decore-reset {
+    @include no-user-select;
+    overflow: hidden;
+    text-indent: -9999px;
+    line-height: 0;
+    font-size: 0;
+}
+
+@mixin placeholder() {
+    &::-moz-placeholder { @content }
+    &:-moz-placeholder { @content }
+    &::-webkit-input-placeholder { @content }
+    &:-ms-input-placeholder { @content }
+}
+
+@mixin abs($top: auto, $right: auto, $bottom: auto, $left: auto) {
+    position: absolute;
+    top: $top;
+    right: $right;
+    bottom: $bottom;
+    left: $left;
+}
+
+@mixin sprite($icon) {
+    @include decore-reset;
+    width: nth($icon, 1);
+    height: nth($icon, 2);
+    $sprite-offset-x: nth($icon, 3);
+    $sprite-offset-y: nth($icon, 4);
+    $sprite-width: nth($icon, 5);
+    $sprite-height: nth($icon, 6);
+    $sprite-image: nth($icon, 7);
+    background: url("#{$sprite-image}") #{$sprite-offset-x} #{$sprite-offset-y} no-repeat;
+    @if length($icon) == 8 {
+        $sprite-image-retina: nth($icon, 8);
+        @include retina {
+            background-size: #{$sprite-width} #{$sprite-height};
+            background-image: url("#{$sprite-image-retina}");
+        }
+    }
+}
+
+@mixin box-shadow($top, $left, $blur, $color, $inset: false) {
+    @if $inset {
+        box-shadow: inset $top $left $blur $color;
+    } @else {
+        box-shadow: $top $left $blur $color;
+    }
+}
+
+@mixin transition($prop: all, $dur: 0.3s, $func: ease) {
+    -webkit-transition: $prop $dur $func;
+    -moz-transition: $prop $dur $func;
+    -ms-transition: $prop $dur $func;
+    transition: $prop $dur $func;
+}
+
+@mixin transition-cancel {
+    -webkit-transition: none;
+    -moz-transition: none;
+    -ms-transition: none;
+    transition: none;
+}
+
+@mixin transform($params) {
+    -webkit-transform: $params;
+    -ms-transform: $params;
+    transform: $params;
+}
+
+@mixin translate3d($cords) {
+    -webkit-transform: translate3d($cords);
+    -ms-transform: translate3d($cords);
+    transform: translate3d($cords);
+}
+
+@mixin justify-elements {
+    text-align: justify;
+    font-size: 0;
+    /* IE special */
+    -ms-text-justify: distribute-all-lines;
+    text-justify: distribute-all-lines;
+    &:after {
+        @include decore-reset;
+        content: '';
+        display: inline-block;
+        width: 100%;
+    }
+}
