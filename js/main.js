@@ -79,8 +79,11 @@ jQuery.noConflict()(function ($) {
             }
         }
     }
-    generateSwatches(galleryData3);
-    ONEPICA.Gallery.init(galleryData3, ".product-view-gallery");
+
+    generateSwatches(galleryData);
+    ONEPICA.Gallery.init(galleryData, ".product-view-gallery", {
+        isQuickView: false
+    });
 
     $(".js-popup").fancybox();
     $('.fancybox-media').fancybox({
