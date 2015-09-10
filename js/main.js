@@ -81,6 +81,7 @@ jQuery.noConflict()(function ($) {
     }
 
     generateSwatches(galleryData);
+
     ONEPICA.Gallery.init(galleryData, ".product-view-gallery", {
         isQuickView: false
     });
@@ -95,10 +96,21 @@ jQuery.noConflict()(function ($) {
             media: {}
         }
     });
+
+    var dataObject = ONEPICA.Gallery.getGalleryObject('gallery_main');
+
+    (function onloadFunction() {
+        var s = $("#template").html();
+        var s1 = tmpl(s, dataObject);
+        $("#results").html(s1);
+    })();
+
     (function () {
         $('#swatches').find('span').on('click', function () {
             ONEPICA.Gallery.switchGalleryView($(this).attr('data-swatch'));
         });
+        ONEPICA.Gallery.getGalleryObject('gallery_main');
     })();
+
 });
 

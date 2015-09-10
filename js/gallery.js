@@ -3,11 +3,11 @@ var galleryData = {
     videos: [
         {
             url: "http://vimeo.com/129766340",
-            thumb: "http://stylishhdwallpapers.com/wp-content/uploads/2015/07/Warcraft-Horde-DoomHammer-HD-Wallpaper.jpg"
+            thumb: "http://iqlab.ua/test/gallery/thumb5.jpg"
         },
         {
             url: "http://vimeo.com/129766340",
-            thumb: "http://stylishhdwallpapers.com/wp-content/uploads/2015/07/Warcraft-Horde-DoomHammer-HD-Wallpaper.jpg"
+            thumb: "http://iqlab.ua/test/gallery/thumb5.jpg"
         }
     ],
     gallery_main: {
@@ -67,7 +67,7 @@ var galleryData = {
                 thumb: "http://iqlab.ua/test/gallery/thumb0_000.png"
             },
             {
-                isBase: false,
+                isBase: true,
                 label: "image #1",
                 thumb: "http://iqlab.ua/test/gallery/thumb1.png"
             },
@@ -110,9 +110,9 @@ var ONEPICA = ONEPICA || {};
 
             isQuickView: false,
 
-            mainImagesSetName: 'gallery_main',
+            mainGallerySet: 'gallery_main',
             videosDataName: 'videos',
-            noImageUrl: "https://daniellereviewsmovingpictures.files.wordpress.com/2015/06/11141364_680145855424272_7135930776227614345_o.jpg",
+            noImageUrl: "http://iqlab.ua/test/gallery/thumb3.png",
 
             baseParams: {
                 mainImageWrapperClass: 'js-main-image-wrapper',
@@ -158,7 +158,7 @@ var ONEPICA = ONEPICA || {};
         return {
             params: defaults,
             currentGalleryKey: '',
-            currentImagesSetDetails: {},
+            currentImagesSet: {},
             $galleryHolderElement: '',
             startingImage: 0,
             isZoomActive: false,
@@ -242,10 +242,10 @@ var ONEPICA = ONEPICA || {};
                     return;
                 }
 
-                this.currentImagesSetDetails = this.gallery[key].images;
+                this.currentImagesSet = this.gallery[key].images;
 
-                this.generateMainImage(this.currentImagesSetDetails);
-                this.generateGalleryThumbs(this.currentImagesSetDetails);
+                this.generateMainImage(this.currentImagesSet);
+                this.generateGalleryThumbs(this.currentImagesSet);
 
                 if (this.isMobile && this.isThumbsGalleryExist) {
                     this.hideMainImage();
@@ -290,7 +290,7 @@ var ONEPICA = ONEPICA || {};
              * Finds base image basing on images object
              *
              * @param {object} imagesData - an object with images
-             * @param {string} imagesData.label - image label
+             * @param {string} imagesData.label - image alt
              * @param {string} imagesData.thumb - image src
              * @param {bool} imagesData.isBase - is image a base image flag
              *
@@ -387,7 +387,7 @@ var ONEPICA = ONEPICA || {};
                 el
                     .addClass(self.mainEl)
                     .attr('src', baseImageData.src)
-                    .attr('label', baseImageData.label)
+                    .attr('alt', baseImageData.label)
                     .attr('id', self.mainElId)
                     .attr('data-image-index', baseImageData.index)
                     .attr('data-zoom-image', baseImageData.src)
@@ -508,7 +508,7 @@ var ONEPICA = ONEPICA || {};
              *
              * @param {object} imagesData - an object with images
              * @param {string} imagesData.thumb - an url of image
-             * @param {string} imagesData.label - a label of image
+             * @param {string} imagesData.label - an alt of image
              */
             generateGalleryThumbs: function (imagesData) {
                 if (this.isThumbsGalleryExist) {
@@ -558,7 +558,7 @@ var ONEPICA = ONEPICA || {};
                                     .attr('data-image', self.params.noImageUrl);
                                 self.noImageIndex = img.parent().attr('data-image-index');
                             })
-                            .attr('label', '' + imagesData[imageIndex].label)
+                            .attr('alt', '' + imagesData[imageIndex].label)
                             .appendTo(a);
                 });
                 this.makeThumbActive($('.' + this.mainEl));
@@ -586,7 +586,7 @@ var ONEPICA = ONEPICA || {};
                 container.prependTo(this.$galleryHolderElement);
 
                 $.each(imagesData, function (imageIndex) {
-                    var div = $('<div/>')
+                    var div = $('<li/>')
                             .addClass(self.thumb)
                             .attr('data-image-index', imageIndex)
                             .appendTo(container),
@@ -594,12 +594,8 @@ var ONEPICA = ONEPICA || {};
                             .attr('src', imagesData[imageIndex].thumb)
                             .on('error', function () {
                                 img.attr('src', self.params.noImageUrl);
-                                img
-                                    .parent()
-                                    .attr('data-zoom-image', self.params.noImageUrl)
-                                    .attr('data-image', self.params.noImageUrl)
                             })
-                            .attr('label', '' + imagesData[imageIndex].label)
+                            .attr('alt', '' + imagesData[imageIndex].label)
                             .appendTo(div);
                 });
             },
@@ -691,7 +687,7 @@ var ONEPICA = ONEPICA || {};
                 mainImage.attr('data-image-index', index);
                 mainImage.attr('data-zoom-image', $(newImage).attr('data-zoom-image'));
                 mainImage.attr('src', $(newImage).attr('data-zoom-image'));
-                mainImage.attr('label', $(newImage).find('img').attr('label'));
+                mainImage.attr('alt', $(newImage).find('img').attr('alt'));
             },
 
             /**
@@ -799,13 +795,13 @@ var ONEPICA = ONEPICA || {};
                 this.gallery = imagesData;
 
                 this.params = $.extend(true, {}, defaults, settings);
-                this.currentGalleryKey = this.params.mainImagesSetName;
-                this.currentImagesSetDetails = this.gallery[this.currentGalleryKey].images;
+                this.currentGalleryKey = this.params.mainGallerySet;
+                this.currentImagesSet = this.gallery[this.currentGalleryKey].images;
                 this.$galleryHolderElement = $(containerSelector);
                 this.startingImage = this.findBaseImage(this.gallery[this.currentGalleryKey].images);
                 this.currentThumbIndex = this.startingImage.index;
 
-                this.sortImages(self.params.mainImagesSetName);
+                this.sortImages(self.params.mainGallerySet);
                 this.initialize();
 
                 if (this.params.isQuickView) {
@@ -824,21 +820,31 @@ var ONEPICA = ONEPICA || {};
                     }
                 );
             },
-
+            /**
+             * @param {string} galleryKey - a key of gallery view to generate new gallery
+             * @returns {object} - an object with current gallery data
+             * */
+            getGalleryObject: function (galleryKey) {
+                return {
+                    gal: this.gallery,
+                    key: this.gallery[galleryKey],
+                    baseImage: this.findBaseImage(this.gallery[galleryKey].images)
+                };
+            },
             /**
              * Initialization of mobile view
              *
              * @param {string} galleryKey - a key of gallery view to generate new gallery
              */
             switchGalleryView: function (galleryKey) {
-
                 this.removeGallery();
+                this.getGalleryObject(galleryKey);
                 this.sortImages(galleryKey);
                 this.generateGallery(galleryKey);
                 if (this.isMobile && !this.isMobileSliderEnabled) {
                     this.addMobileSlider();
                 }
-                this.currentImagesSetDetails = galleryKey;
+                this.currentImagesSet = galleryKey;
             }
         }
     })();
