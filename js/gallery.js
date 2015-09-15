@@ -1,107 +1,6 @@
 'use strict';
-var galleryData = {
-    videos: [
-        {
-            url: "http://vimeo.com/129766340",
-            thumb: "http://iqlab.ua/test/gallery/thumb5.jpg"
-        },
-        {
-            url: "http://vimeo.com/129766340",
-            thumb: "http://iqlab.ua/test/gallery/thumb5.jpg"
-        }
-    ],
-    gallery_main: {
-        images: [
-            {
-                isBase: true,
-                label: "image #1",
-                thumb: "http://iqlab.ua/test/gallery/thumb4.jpg"
-            },
-            {
-                isBase: false,
-                label: "image #2",
-                thumb: "http://iqlab.ua/test/gallery/thumb5.jpg"
-            },
-            {
-                isBase: false,
-                label: "image #3",
-                thumb: "http://iqlab.ua/test/gallery/thumb6.jpg"
-            },
-            {
-                isBase: false,
-                label: "image #4",
-                thumb: "http://iqlab.ua/test/gallery/thumb7.jpg"
-            },
-            {
-                isBase: false,
-                label: "image #5",
-                thumb: "http://iqlab.ua/test/gallery/thumb8.jpg"
-            },
-            {
-                isBase: false,
-                label: "image #0",
-                thumb: "http://iqlab.ua/test/gallery/thumb0_000.png"
-            },
-            {
-                isBase: false,
-                label: "image #1",
-                thumb: "http://iqlab.ua/test/gallery/thumb1.png"
-            },
-            {
-                isBase: false,
-                label: "image #2",
-                thumb: "http://iqlab.ua/test/gallery/thumb2.png"
-            },
-            {
-                isBase: false,
-                label: "image #3",
-                thumb: "http://iqlab.ua/test/gallery/thumb3.png"
-            }
-        ]
-    },
-    gallery_error: {
-        images: [
-            {
-                isBase: false,
-                label: "image #0",
-                thumb: "http://iqlab.ua/test/gallery/thumb0_000.png"
-            },
-            {
-                isBase: true,
-                label: "image #1",
-                thumb: "http://iqlab.ua/test/gallery/thumb1.png"
-            },
-            {
-                isBase: false,
-                label: "image #2",
-                thumb: "http://iqlab.ua/test/gallery/thumb2.png"
-            },
-            {
-                isBase: false,
-                label: "image #3",
-                thumb: "http://iqlab.ua/test/gallery/thumb3.png"
-            }
-        ]
-    },
-    gallery_image: {
-        images: [
-            {
-                isBase: false,
-                label: "image #1",
-                thumb: "http://iqlab.ua/test/gallery/thumb8.jpg"
-            }
-        ]
-    },
-    gallery_placeholder: {
-        placeholder: {
-            label: "image #1",
-            thumb: "http://36.media.tumblr.com/d226f2dc0af8889dedb6ae010d796595/tumblr_nnkkezir8Z1topm99o1_1280.jpg"
-        }
-    }
-};
 
 var ONEPICA = ONEPICA || {};
-
 (function ($) {
     'use strict';
     ONEPICA.Gallery = ONEPICA.Gallery || {};
@@ -111,37 +10,19 @@ var ONEPICA = ONEPICA || {};
             isQuickView: false,
 
             mainGallerySet: 'gallery_main',
-            videosDataName: 'videos',
-            noImageUrl: "http://iqlab.ua/test/gallery/thumb3.png",
+            noImageUrl: "http://36.media.tumblr.com/d226f2dc0af8889dedb6ae010d796595/tumblr_nnkkezir8Z1topm99o1_1280.jpg",
 
             baseParams: {
                 mainImageWrapperClass: 'js-main-image-wrapper',
                 mainImageClass: 'js-main-image',
                 mainImageID: 'jsMainImage',
 
-                thumbClass: 'thumb-element',
                 thumbClassActive: 'active-thumb',
-                thumbContainerClass: 'product-view-image-thumbs',
                 thumbContainerId: 'thumbsContainer',
-                thumbItemClass: 'product-image-thumb',
                 thumbLinkClass: 'js-thumb-link',
-                thumbImgClass: 'js-thumb-image',
-
-                thumbVideoItemClass: 'product-video-thumb',
-                thumbVideoLinkClass: 'product-video-link',
-                thumbVideoContainer: 'product-video-thumbs-container',
 
                 loaderClass: 'js-loader',
-                loaderUrl: 'https://www.myaultcare.com/image/loading.gif',
-                popupClass: 'fancybox-media js-popup',
-                hiddenClass: 'is-hidden',
-
-                thumbsTitleClass: 'product-view-subtitle',
-                thumbsTitleText: 'More views',
-
                 mobileSliderId: 'mobileSlider',
-                mobileSliderClass: 'js-mobile-slider',
-
                 resizeTimeout: 500
             },
             zoomParams: {
@@ -164,13 +45,11 @@ var ONEPICA = ONEPICA || {};
             isZoomActive: false,
             isMobile: false,
             mobileSliderHolder: '',
+            isLoading: true,
 
             /**
              * Reset params
              */
-            isMainImageExist: false,
-            isThumbsGalleryExist: false,
-            isVideoGalleryExist: false,
             isMobileSliderEnabled: false,
             currentThumbIndex: 0,
             noImageIndex: 'undefined',
@@ -178,8 +57,6 @@ var ONEPICA = ONEPICA || {};
             /**
              * selectors
              */
-            mainEl: '',
-            mainElWrapper: '',
             gallery: {},
 
             sortImages: function (key) {
@@ -199,17 +76,12 @@ var ONEPICA = ONEPICA || {};
                 this.mainElWrapper = this.params.baseParams.mainImageWrapperClass;
 
                 this.loader = this.params.baseParams.loaderClass;
-                this.loaderUrl = this.params.baseParams.loaderUrl;
 
-                this.thumbContainer = this.params.baseParams.thumbContainerClass;
                 this.thumbContainerId = this.params.baseParams.thumbContainerId;
-                this.thumb = this.params.baseParams.thumbItemClass;
                 this.thumbLink = this.params.baseParams.thumbLinkClass;
                 this.thumbLinkActive = this.params.baseParams.thumbClassActive;
 
-                this.hidden = this.params.baseParams.hiddenClass;
                 this.mobileSliderId = this.params.baseParams.mobileSliderId;
-                this.mobileSliderClass = this.params.baseParams.mobileSliderId;
             },
 
             /**
@@ -218,9 +90,6 @@ var ONEPICA = ONEPICA || {};
             removeGallery: function () {
                 this.$galleryHolderElement.empty();
 
-                this.isMainImageExist = false;
-                this.isThumbsGalleryExist = false;
-                this.isVideoGalleryExist = false;
                 this.isMobileSliderEnabled = false;
                 this.currentThumbIndex = 0;
                 this.noImageIndex = 'undefined';
@@ -235,39 +104,22 @@ var ONEPICA = ONEPICA || {};
             generateGallery: function (key) {
 
                 this.currentGalleryKey = key;
-
-                if (typeof this.gallery[key].placeholder !== 'undefined') {
-                    this.generatePlaceholder(key);
-                    this.generateVideoThumbs();
-                    return;
-                }
-
                 this.currentImagesSet = this.gallery[key].images;
 
                 this.generateMainImage(this.currentImagesSet);
                 this.generateGalleryThumbs(this.currentImagesSet);
 
-                if (this.isMobile && this.isThumbsGalleryExist) {
+                if (this.isMobile) {
                     this.hideMainImage();
                 }
             },
 
-            hideMainImage: function () {
-                $('.' + this.mainElWrapper).addClass(this.hidden);
-            },
-
             showMainImage: function () {
-                $('.' + this.mainElWrapper).removeClass(this.hidden);
+                $('.' + this.mainElWrapper).show();
             },
 
-            addLoader: function () {
-                var loader =
-                    $('<div/>')
-                        .addClass(this.loader)
-                        .appendTo($('.' + this.mainElWrapper));
-                $('<span/>')
-                    .attr('src', this.loaderUrl)
-                    .appendTo(loader);
+            hideMainImage: function () {
+                $('.' + this.mainElWrapper).hide();
             },
 
             showLoader: function () {
@@ -276,14 +128,6 @@ var ONEPICA = ONEPICA || {};
 
             hideLoader: function () {
                 $('.' + this.loader).hide();
-            },
-
-            getMainImageDimensions: function () {
-                var mainImage = $('.' + this.mainElWrapper);
-                return {
-                    width: mainImage.width(),
-                    height: mainImage.width()
-                }
             },
 
             /**
@@ -320,89 +164,19 @@ var ONEPICA = ONEPICA || {};
             },
 
             /**
-             * Creates placeholder of an image basing on placeholder key name
-             *
-             * @param {string} placeholderKey - a key for placeholder info
-             * @param {string} placeholderKey.placeholder.thumb - an src to placeholder image
-             *
-             */
-            generatePlaceholder: function (placeholderKey) {
-                if (this.isMainImageExist) {
-                    return;
-                }
-
-                var self = this,
-                    el = $('<img />'),
-                    wrapper = $('<div>')
-                        .addClass(this.mainElWrapper)
-                        .appendTo(this.$galleryHolderElement),
-                    baseImageDimensions = this.getMainImageDimensions();
-
-                el
-                    .addClass(self.mainEl)
-                    .attr('src', this.gallery[placeholderKey].placeholder.thumb)
-                    .appendTo(wrapper)
-                    .css({opacity: 0})
-                    .on('error', function () {
-                        el.attr('src', self.params.noImageUrl)
-                    })
-                    .on('load', function () {
-                        el.css(
-                            {
-                                opacity: 1,
-                                width: 'auto',
-                                height: 'auto'
-                            }
-                        );
-                        self.hideLoader();
-                    });
-                el.css(
-                    {
-                        width: baseImageDimensions.width,
-                        height: baseImageDimensions.height
-                    }
-                );
-                this.addLoader();
-                this.showLoader();
-                this.isMainImageExist = true;
-            },
-
-            /**
              * Generates Main Image object basing on images object
-             * @param {object} imagesData - an object with images
-             *
              */
-            generateMainImage: function (imagesData) {
-                if (this.isMainImageExist) {
-                    return;
-                }
+            generateMainImage: function () {
                 var self = this,
-                    el = $('<img />'),
-                    baseImageWrapper = $('<div>')
-                        .addClass(self.mainElWrapper)
-                        .appendTo(self.$galleryHolderElement),
-                    baseImageData = this.findBaseImage(imagesData),
-                    baseImageDimensions = this.getMainImageDimensions();
-
+                    el = $('.' + this.mainEl);
                 el
-                    .addClass(self.mainEl)
-                    .attr('src', baseImageData.src)
-                    .attr('alt', baseImageData.label)
-                    .attr('id', self.mainElId)
-                    .attr('data-image-index', baseImageData.index)
-                    .attr('data-zoom-image', baseImageData.src)
-
-                    .appendTo(baseImageWrapper)
-                    .css({opacity: 0})
+                    .addClass('loading')
                     .on('load', function () {
-                        el.css(
-                            {
-                                opacity: 1,
-                                width: 'auto',
-                                height: 'auto'
-                            }
-                        );
+                        el.removeClass('loading');
                         self.hideLoader();
+                        self.isLoading = false;
+                        console.log(self.isLoading);
+
                     })
                     .on('error', function () {
                         el
@@ -410,195 +184,51 @@ var ONEPICA = ONEPICA || {};
                             .attr('data-zoom-image', self.params.noImageUrl);
                         self.noImageIndex = el.attr('data-image-index');
                     });
-                this.addLoader();
 
-                el.css(
-                    {
-                        width: baseImageDimensions.width,
-                        height: baseImageDimensions.height
-                    }
-                );
-                this.makeThumbActive($('.' + this.mainEl));
-
-                this.isMainImageExist = true;
-
-                if (this.isMobile && this.isThumbsGalleryExist) {
-                    this.hideLoader();
-                    baseImageWrapper.hide();
-                } else {
+                if (this.isLoading) {
+                    console.log(this.isLoading);
                     this.showLoader();
-                    baseImageWrapper.show();
+                    this.makeThumbActive(el);
                 }
-                this.getMainImageDimensions();
             },
-
-            /**
-             * Generates Video thumbs container
-             */
-            findOrCreateVideoThumbsContainer: function () {
-                if (this.isMobile || !this.isThumbsGalleryExist) {
-                    return $('<ul/>')
-                        .addClass(this.thumbContainer)
-                        .appendTo(this.$galleryHolderElement);
-                }
-                return this.$galleryHolderElement.find('.' + this.thumbContainer);
-            },
-
-            /**
-             * Creates Thumbs title
-             * @returns {string}
-             */
-            createThumbsTitle: function () {
-                return $('<h3/>')
-                    .addClass(this.params.baseParams.thumbsTitleClass)
-                    .text(this.params.baseParams.thumbsTitleText);
-            },
-
-            /**
-             * Creates Thumbs container
-             * @returns {string}
-             */
-            createThumbsContainer: function (id, className) {
-                return $('<ul/>')
-                    .attr('id', id)
-                    .addClass(className);
-            },
-
-            /**
-             * Generates Video thumbs basing on videos object
-             * @param {string} [parentElement] - container for video thumbs
-             */
-            generateVideoThumbs: function (parentElement) {
-                if (this.isVideoGalleryExist || this.params.isQuickView) {
-                    return;
-                }
-
-                if (typeof this.gallery[this.params.videosDataName] === 'undefined') {
-                    this.isVideoGalleryExist = false;
-                    return;
-                }
-
-                var videoData = this.gallery[this.params.videosDataName],
-                    container = parentElement ? parentElement : this.findOrCreateVideoThumbsContainer(),
-                    self = this;
-
-                $.each(videoData, function (videoIndex) {
-                        var li = $('<li/>')
-                                .addClass(self.thumb)
-                                .addClass(self.params.baseParams.thumbVideoItemClass)
-                                .appendTo(container),
-                            span = $('<span/>')
-                                .addClass(self.params.baseParams.thumbClass)
-                                .addClass(self.params.baseParams.thumbVideoLinkClass)
-                                .addClass(self.params.baseParams.popupClass)
-                                .attr('data-fancybox-href', videoData[videoIndex].url)
-                                .appendTo(li),
-                            img = $('<img/>')
-                                .addClass(self.params.baseParams.thumbImgClass)
-                                .attr('src', videoData[videoIndex].thumb)
-                                .appendTo(span);
-                    }
-                );
-                this.isVideoGalleryExist = true;
-            },
-
 
             /**
              * Generates images thumbs from images object
-             *
-             * @param {object} imagesData - an object with images
-             * @param {string} imagesData.thumb - an url of image
-             * @param {string} imagesData.label - an alt of image
              */
-            generateGalleryThumbs: function (imagesData) {
-                if (this.isThumbsGalleryExist) {
-                    return;
-                }
+            generateGalleryThumbs: function () {
                 var self = this;
 
-                if (imagesData.length <= 1 || this.isThumbsGalleryExist) {
-                    this.generateVideoThumbs();
-                    this.isThumbsGalleryExist = false;
-                    return this.isThumbsGalleryExist;
-                }
-                var container = this.createThumbsContainer(self.thumbContainerId, self.thumbContainer),
-                    title = this.createThumbsTitle();
-
-                container.appendTo(this.$galleryHolderElement);
-                title.insertBefore(container);
-
-                $.each(imagesData, function (imageIndex) {
-                    var li = $('<li/>')
-                            .addClass(self.thumb)
-                            .appendTo(container),
-                        a = $('<a/>')
-                            .addClass(self.thumbLink + ' ' + self.params.baseParams.thumbClass)
-                            .attr('data-image-index', imageIndex)
-                            .attr('href', '#')
-                            .attr('data-zoom-image', imagesData[imageIndex].thumb)
-                            .attr('data-image', imagesData[imageIndex].thumb)
-
-                            .on('click', function (e) {
-                                e.preventDefault();
-                                self.switchGalleryImage($(this).attr('data-image-index'));
-                                self.makeThumbActive($(this));
-                                if (self.isMobileSliderEnabled) {
-                                    self.mobileSliderHolder.goToSlide($(this).attr('data-image-index'));
-                                }
-                            })
-                            .appendTo(li),
-                        img = $('<img/>')
-                            .addClass(self.params.baseParams.thumbImgClass)
-                            .attr('src', imagesData[imageIndex].thumb)
-                            .on('error', function () {
-                                img.attr('src', self.params.noImageUrl);
-                                img
-                                    .parent()
-                                    .attr('data-zoom-image', self.params.noImageUrl)
-                                    .attr('data-image', self.params.noImageUrl);
-                                self.noImageIndex = img.parent().attr('data-image-index');
-                            })
-                            .attr('alt', '' + imagesData[imageIndex].label)
-                            .appendTo(a);
+                $('.' + this.thumbLink).each(function () {
+                    $(this)
+                        .on('click', function (e) {
+                            e.preventDefault();
+                            self.switchGalleryImage($(this).attr('data-image-index'));
+                            self.makeThumbActive($(this));
+                            if (self.isMobileSliderEnabled) {
+                                self.mobileSliderHolder.goToSlide($(this).attr('data-image-index'));
+                            }
+                        })
+                        .find('img')
+                        .on('error', function () {
+                            $(this).attr('src', self.params.noImageUrl);
+                            $(this)
+                                .parent()
+                                .attr('data-zoom-image', self.params.noImageUrl)
+                                .attr('data-image', self.params.noImageUrl);
+                            self.noImageIndex = $(this).parent().attr('data-image-index');
+                        });
                 });
+
+                $('#' + self.mobileSliderId).find('img').each(function () {
+                    $(this).on('error', function () {
+                        $(this)
+                            .attr('src', self.params.noImageUrl);
+                    });
+                });
+
                 this.makeThumbActive($('.' + this.mainEl));
-
-                this.generateVideoThumbs(container);
-                this.generateSliderElements(imagesData);
-
-                this.isThumbsGalleryExist = true;
             },
 
-            /**
-             * Generates images thumbs from images object
-             *
-             * @param {object} imagesData - an object with images
-             * @param {string} imagesData.thumb - an url of image
-             * @param {string} imagesData.label - a label of image
-             */
-            generateSliderElements: function (imagesData) {
-                if (this.isThumbsGalleryExist) {
-                    return;
-                }
-                var container = this.createThumbsContainer(this.mobileSliderId, this.mobileSliderId),
-                    self = this;
-
-                container.prependTo(this.$galleryHolderElement);
-
-                $.each(imagesData, function (imageIndex) {
-                    var div = $('<li/>')
-                            .addClass(self.thumb)
-                            .attr('data-image-index', imageIndex)
-                            .appendTo(container),
-                        img = $('<img/>')
-                            .attr('src', imagesData[imageIndex].thumb)
-                            .on('error', function () {
-                                img.attr('src', self.params.noImageUrl);
-                            })
-                            .attr('alt', '' + imagesData[imageIndex].label)
-                            .appendTo(div);
-                });
-            },
             /**
              * Zoom resize initialization
              * Sets timeout to prevent resize event fire multiple times
@@ -631,8 +261,11 @@ var ONEPICA = ONEPICA || {};
                         setTimeout(checkResizeProgress, self.params.baseParams.resizeTimeout);
                         resizeInProgress = false;
                     } else {
+                        console.log($('#' + self.mainElId).width());
+                        console.log($('#' + self.mainElId).height());
                         self.hideLoader();
-                        self.addZoom();
+                        self.addZoom($('#' + self.mainElId).width(), $('#' + self.mainElId).height());
+
                         zoomExists = true;
                     }
                 }
@@ -642,12 +275,13 @@ var ONEPICA = ONEPICA || {};
              * Adds mobile slider basing on images thumbs
              */
             addMobileSlider: function () {
-                var self = this;
-                if (!this.isMobile || !this.isThumbsGalleryExist) {
+                var self = this,
+                    sliderID = $('#' + self.mobileSliderId),
+                    sliderEl = sliderID.find('.' + self.thumb).find('img');
+                if (!this.isMobile) {
                     return;
                 }
-
-                this.mobileSliderHolder = $('#' + self.mobileSliderId).bxSlider({
+                this.mobileSliderHolder = sliderID.bxSlider({
                     pager: self.params.sliderParams.pager,
                     startSlide: self.currentThumbIndex,
                     onSlideNext: function (currentSlide) {
@@ -681,7 +315,7 @@ var ONEPICA = ONEPICA || {};
              */
             switchGalleryImage: function (index) {
                 var mainImage = this.$galleryHolderElement.find($('.' + this.mainEl)),
-                    newImage = $('.' + this.thumbContainer).find("[data-image-index='" + index + "']");
+                    newImage = $('#' + this.thumbContainerId).find("[data-image-index='" + index + "']");
 
                 this.currentThumbIndex = index;
                 mainImage.attr('data-image-index', index);
@@ -697,7 +331,7 @@ var ONEPICA = ONEPICA || {};
              */
             makeThumbActive: function (thumb) {
                 var index = $(thumb).attr('data-image-index'),
-                    $links = $('.' + this.thumbContainer);
+                    $links = $('#' + this.thumbContainerId);
                 $links
                     .find('.' + this.thumbLink)
                     .removeClass(this.thumbLinkActive);
@@ -707,6 +341,8 @@ var ONEPICA = ONEPICA || {};
                     .find("[data-image-index='" + index + "']")
                     .addClass(this.thumbLinkActive);
                 this.addZoom();
+                console.log('makeActive');
+
             },
 
             /**
@@ -720,6 +356,8 @@ var ONEPICA = ONEPICA || {};
                 if (this.isMobile || this.params.isQuickView) {
                     return;
                 }
+                console.log('zoom');
+
                 var mainImage = $('#' + this.mainElId);
 
                 if (!this.isZoomActive && mainImage.attr('data-image-index') !== this.noImageIndex) {
@@ -727,6 +365,8 @@ var ONEPICA = ONEPICA || {};
                         zoomWindowWidth: width ? width : mainImage.width(),
                         zoomWindowHeight: height ? height : mainImage.height()
                     }));
+                    console.log( mainImage.width());
+                    console.log( mainImage.width());
                     this.isZoomActive = true;
                 }
             },
@@ -743,7 +383,6 @@ var ONEPICA = ONEPICA || {};
                 image.removeData('elevateZoom');
                 image.removeData('zoomImage');
                 this.isZoomActive = false;
-
             },
 
             /**
@@ -753,9 +392,8 @@ var ONEPICA = ONEPICA || {};
             initDesktop: function (self) {
                 self.isMobile = false;
 
-                if (self.isMainImageExist) {
-                    self.showMainImage();
-                }
+                self.showMainImage();
+
                 self.generateGallery(self.currentGalleryKey);
                 if (self.isMobileSliderEnabled) {
                     self.removeMobileSlider();
@@ -773,12 +411,10 @@ var ONEPICA = ONEPICA || {};
 
                 self.removeZoom();
 
-                //hides main image only if there more than one gallery image
-                if (self.isThumbsGalleryExist) {
-                    self.hideMainImage();
-                }
+                self.hideMainImage();
+                self.hideLoader();
 
-                if (!self.isMobileSliderEnabled && self.isThumbsGalleryExist) {
+                if (!self.isMobileSliderEnabled) {
                     self.addMobileSlider();
                 }
             },
@@ -794,6 +430,8 @@ var ONEPICA = ONEPICA || {};
                 var self = this;
                 this.gallery = imagesData;
 
+                this.sortImages(self.params.mainGallerySet);
+
                 this.params = $.extend(true, {}, defaults, settings);
                 this.currentGalleryKey = this.params.mainGallerySet;
                 this.currentImagesSet = this.gallery[this.currentGalleryKey].images;
@@ -801,36 +439,54 @@ var ONEPICA = ONEPICA || {};
                 this.startingImage = this.findBaseImage(this.gallery[this.currentGalleryKey].images);
                 this.currentThumbIndex = this.startingImage.index;
 
-                this.sortImages(self.params.mainGallerySet);
                 this.initialize();
 
-                if (this.params.isQuickView) {
-                    this.initDesktop(self);
-                }
-                this.initZoomResize();
+                this.generateHtml(this.getGalleryObject(this.currentGalleryKey));
 
-                $(window).on("mediaTD",
-                    function () {
-                        self.initDesktop(self);
+                if (this.isLoading) {
+                    if (this.params.isQuickView) {
+                        this.initDesktop(self);
                     }
-                );
-                $(window).on("mediaM",
-                    function () {
-                        self.initMobile(self);
-                    }
-                );
+                    this.initZoomResize();
+
+                    $(window).on("mediaTD",
+                        function () {
+                            self.initDesktop(self);
+                        }
+                    );
+                    $(window).on("mediaM",
+                        function () {
+                            self.initMobile(self);
+                        }
+                    );
+                }
             },
             /**
              * @param {string} galleryKey - a key of gallery view to generate new gallery
              * @returns {object} - an object with current gallery data
              * */
             getGalleryObject: function (galleryKey) {
+                if (typeof this.gallery[galleryKey].placeholder !== 'undefined') {
+                    return {
+                        gal: this.gallery,
+                        key: this.gallery[galleryKey],
+                        placeholderThumb: this.gallery[galleryKey].placeholder.thumb,
+                        placeholderLabel: this.gallery[galleryKey].placeholder.label
+                    }
+                }
                 return {
                     gal: this.gallery,
                     key: this.gallery[galleryKey],
                     baseImage: this.findBaseImage(this.gallery[galleryKey].images)
                 };
             },
+
+            generateHtml: function (data) {
+                var template = $("#template").html(),
+                    content = tmpl(template, data);
+                $("#product-view-gallery").html(content);
+            },
+
             /**
              * Initialization of mobile view
              *
@@ -838,12 +494,16 @@ var ONEPICA = ONEPICA || {};
              */
             switchGalleryView: function (galleryKey) {
                 this.removeGallery();
-                this.getGalleryObject(galleryKey);
                 this.sortImages(galleryKey);
+
+                this.generateHtml(this.getGalleryObject(galleryKey));
+
                 this.generateGallery(galleryKey);
+
                 if (this.isMobile && !this.isMobileSliderEnabled) {
                     this.addMobileSlider();
                 }
+
                 this.currentImagesSet = galleryKey;
             }
         }
