@@ -1,21 +1,26 @@
+/*
 // Singleton ------------------------------------
 var OPAL_Gallery = OPAL_Gallery || {};
 (function($) {
     OPAL_Gallery = {
-        /**
+        */
+/**
          *
-         */
+         *//*
+
         isQuickView: false,
-        /**
+        */
+/**
          *
-         */
+         *//*
+
          nodes: {
 
         },
         init: function (isQuickView) {
             this.isQuickView = isQuickView;
         },
-        generateGallery: function() {
+        initGallery: function() {
             this.isQuickView = true;
         }
     }
@@ -33,3 +38,4 @@ OPAL_Constructor.prototype = {
 };
 
 var newObj = new OPAL_Constructor($(".ttt"));
+*/

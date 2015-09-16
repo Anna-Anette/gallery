@@ -9,6 +9,7 @@
     <script src="js/fancybox/jquery.fancybox.min.js"></script>
     <script src="js/fancybox/jquery.fancybox-media.js"></script>
     <script src="js/bxSlider/dist/jquery.bxslider.min.js"></script>
+    <script src="js/jsons.js"></script>
     <script src="js/gallery.js"></script>
     <script src="js/tmpl.js"></script>
     <script src="js/main.js"></script>
@@ -17,11 +18,8 @@
 
 <div class="main row">
     <div class="column medium-6">
-        <div class="product-view-gallery"></div>
-
+        <div id="product-view-gallery" class="product-view-gallery"></div>
         <div id="swatches"></div>
-
-        <div id="results"></div>
     </div>
     <div class="column medium-6">
         Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin
@@ -40,51 +38,60 @@
 
 
 <script type="text/html" id="template">
-    <% if (typeof key.images !== 'undefined' && key.images.length > 1) { %>
-        <ul id="mobileSlider" class="mobileSlider">
-            <% for ( var i = 0; i < key.images.length; i++ ) { %>
-                <li class="product-image-thumb" data-image-index="0">
-                    <img src="<%=key.images[i].thumb%>" alt="<%=key.images[i].label%>">
-                </li>
-            <% } %>
-        </ul>
-    <% } %>
-    <div class="js-main-image-wrapper">
-        <img src="<%=baseImage.src%>" alt="<%=baseImage.label%>" />
-    </div>
-    <div class="js-loader">
-        <span></span>
-    </div>
-    <h3 class="product-view-subtitle">More Views</h3>
-<% if (typeof key.images !== 'undefined' || typeof gal.videos !== 'undefined') { %>
-    <ul id="thumbsContainer" class="product-view-image-thumbs">
-        <% if (typeof key.images !== 'undefined' && key.images.length > 1) { %>
-            <% for ( var i = 0; i < key.images.length; i++ ) { %>
-                <li class="product-image-thumb">
-                    <a class="js-thumb-link thumb-element"
-                       data-image-index="0"
-                       href="#"
-                       data-zoom-image="<%=key.images[i].thumb%>"
-                       data-image="<%=key.images[i].thumb%>">
-                        <img class="js-thumb-image" src="<%=key.images[i].thumb%>" alt="<%=key.images[i].label%>" />
-                    </a>
-                </li>
-            <% } %>
-        <% } %>
-
-        <% if (typeof gal.videos !== 'undefined') { %>
-            <% for ( var i = 0; i < gal.videos.length; i++ ) { %>
-                <li class="product-image-thumb product-video-thumb">
-                    <span class="thumb-element product-video-link fancybox-media js-popup"
-                          data-fancybox-href="<%=gal.videos[i].url %>">
-                        <img class="js-thumb-image"
-                             src="<%=gal.videos[i].thumb %>" />
-                    </span>
-                </li>
-            <% } %>
+    <% if (typeof images !== 'undefined' && images.length > 1) { %>
+    <ul id="mobileSlider" class="mobileSlider">
+        <% for ( var i = 0; i < images.length; i++ ) { %>
+        <li class="product-image-thumb" data-image-index="<%=i%>">
+            <img src="<%=images[i].thumb%>" alt="<%=images[i].label%>">
+        </li>
         <% } %>
     </ul>
-<% } %>
+    <% } %>
+    <div class="js-main-image-wrapper main-image-wrapper">
+        <% if (typeof baseImage !== 'undefined') { %>
+        <img id="jsMainImage"
+             class="js-main-image"
+             src="<%=baseImage.src%>"
+             alt="<%=baseImage.label%>"
+             data-image-index="<%=baseImage.index%>"
+             data-zoom-image="<%=baseImage.src%>" />
+        <div class="loader-placeholder js-loader"></div>
+        <% } else { %>
+        <img class="js-main-image"
+             src="<%=placeholder.placeholderThumb%>"
+             alt="<%=placeholder.placeholderLabel%>" />
+        <% } %>
+    </div>
+    <% if (typeof images !== 'undefined' || typeof videos !== 'undefined') { %>
+    <h3 class="product-view-subtitle">More Views</h3>
+    <ul id="thumbsContainer" class="product-view-image-thumbs">
+        <% if (typeof images !== 'undefined' && images.length > 1) { %>
+        <% for ( var i = 0; i < images.length; i++ ) { %>
+        <li class="product-image-thumb js-product-image-thumb">
+            <a class="js-thumb-link product-view-image-thumb product-view-image-link"
+               data-image-index="<%=i%>"
+               href="#"
+               data-zoom-image="<%=images[i].thumb%>"
+               data-image="<%=images[i].thumb%>">
+                <img class="js-thumb-image" src="<%=images[i].thumb%>" alt="<%=images[i].label%>" />
+            </a>
+        </li>
+        <% } %>
+        <% } %>
+
+        <% if (typeof videos !== 'undefined') { %>
+        <% for ( var i = 0; i < videos.length; i++ ) { %>
+        <li class="product-image-thumb product-video-thumb js-product-image-thumb">
+            <span class="product-view-image-thumb product-video-link fancybox-media js-popup"
+                  data-fancybox-href="<%=videos[i].url %>">
+                <img class="js-thumb-image"
+                     src="<%=videos[i].thumb %>" />
+            </span>
+        </li>
+        <% } %>
+        <% } %>
+    </ul>
+    <% } %>
 </script>
 </body>
 </html>

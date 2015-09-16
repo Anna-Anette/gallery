@@ -438,21 +438,20 @@ textarea { resize: none; }
 
 img { max-width: 100%; display: block; }
 
-.js-main-image-wrapper { position: relative; }
+.main-image-wrapper { position: relative; height: 0; padding-bottom: 100%; }
+
+.loader-placeholder { display: none; position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: url("../images/loader-dark.gif") center center no-repeat #ddd; }
 
 .product-view-gallery { margin-bottom: 20px; }
-.product-view-gallery .js-loader { position: absolute; top: 0; right: 0; bottom: 0; left: 0; background-color: #ddd; opacity: .9; }
-.product-view-gallery .js-loader span { background: url("../images/loader-dark.gif") center center no-repeat #ddd; position: absolute; width: 32px; height: 32px; margin-top: -16px; margin-left: -16px; top: 50%; left: 50%; }
 .product-view-gallery .bx-wrapper { margin-bottom: 0; }
 
 @media only screen and (max-width: 767px) { .product-view-image-thumbs .product-image-thumb { display: none; }
   .product-view-image-thumbs .product-image-thumb.product-video-thumb { display: block; } }
 
-.thumb-element { display: block; }
-.thumb-element.active-thumb { outline: 2px solid #232323; }
-@media only screen and (max-width: 767px) { .thumb-element.active-thumb { outline: none; } }
-
-.is-hidden { display: none; }
+.product-view-image-thumb { display: block; position: relative; padding-bottom: 100%; height: 0; background: url("../images/loader-dark.gif") center center no-repeat #ddd; }
+.product-view-image-thumb img { opacity: 0; }
+.product-view-image-thumb.active-thumb { cursor: default; }
+.product-view-image-thumb.active-thumb:after { content: ''; position: absolute; top: -3px; left: -3px; right: -3px; bottom: -3px; border: 2px solid #232323; }
 
 #mobileSlider { display: none; }
 @media only screen and (max-width: 767px) { #mobileSlider { display: block; } }
@@ -460,8 +459,6 @@ img { max-width: 100%; display: block; }
 @media only screen and (max-width: 767px) { .product-view-image-main.mobile-hidden { display: none; } }
 
 @media only screen and (max-width: 767px) { .product-view-gallery { margin-bottom: 20px; } }
-
-.product-view-gallery-image { display: none; }
 
 .product-view-subtitle { font-size: 12px; line-height: 16px; margin-bottom: 10px; margin-top: 20px; }
 @media only screen and (max-width: 767px) { .product-view-subtitle { display: none; } }

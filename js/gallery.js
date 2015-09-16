@@ -19,6 +19,7 @@ var ONEPICA = ONEPICA || {};
 
                 thumbClassActive: 'active-thumb',
                 thumbContainerId: 'thumbsContainer',
+                thumbElement: 'js-product-image-thumb',
                 thumbLinkClass: 'js-thumb-link',
 
                 loaderClass: 'js-loader',
@@ -32,33 +33,79 @@ var ONEPICA = ONEPICA || {};
                 zoomWindowOffetx: 20
             },
             sliderParams: {
-                pager: false
+                pager: false,
+                preloadImages: 'all'
             }
         };
 
         return {
+            /**
+             * Main gallery params
+             */
             params: defaults,
+
+            /**
+             * Current gallery key
+             */
             currentGalleryKey: '',
-            currentImagesSet: {},
+
+            /**
+             * Gallery HTML wrapper
+             */
             $galleryHolderElement: '',
+
+            /**
+             * Gallery starting image
+             */
             startingImage: 0,
+
+            /**
+             * Indicates if zoom is active
+             */
             isZoomActive: false,
+
+            /**
+             * Indicates if Mobile view enabled
+             */
             isMobile: false,
+
+            /**
+             * Mobile gallery slider HTML element
+             */
             mobileSliderHolder: '',
-            isLoading: true,
+
+            /**
+             * Indicates if image is loading
+             */
+            isImageLoading: true,
 
             /**
              * Reset params
              */
+
+            /**
+             * Indicates if mobile slider enabled
+             */
             isMobileSliderEnabled: false,
+
+            /**
+             * Current thumb index
+             */
             currentThumbIndex: 0,
+
+            /**
+             * Index of a broken url image
+             */
             noImageIndex: 'undefined',
 
             /**
-             * selectors
+             * Gallery selectors
              */
             gallery: {},
 
+            /**
+             * Sort Images array according to base image
+             */
             sortImages: function (key) {
                 if (typeof this.gallery[key].images === 'undefined') {
                     return;
@@ -70,7 +117,10 @@ var ONEPICA = ONEPICA || {};
                 }
             },
 
-            initialize: function () {
+            /**
+             * Initialization of main elements
+             */
+            initializeElements: function () {
                 this.mainEl = this.params.baseParams.mainImageClass;
                 this.mainElId = this.params.baseParams.mainImageID;
                 this.mainElWrapper = this.params.baseParams.mainImageWrapperClass;
@@ -78,54 +128,40 @@ var ONEPICA = ONEPICA || {};
                 this.loader = this.params.baseParams.loaderClass;
 
                 this.thumbContainerId = this.params.baseParams.thumbContainerId;
+                this.thumbElement = this.params.baseParams.thumbElement;
                 this.thumbLink = this.params.baseParams.thumbLinkClass;
                 this.thumbLinkActive = this.params.baseParams.thumbClassActive;
 
                 this.mobileSliderId = this.params.baseParams.mobileSliderId;
             },
 
-            /**
-             * Removes generated gallery
-             */
-            removeGallery: function () {
-                this.$galleryHolderElement.empty();
-
-                this.isMobileSliderEnabled = false;
-                this.currentThumbIndex = 0;
-                this.noImageIndex = 'undefined';
-
-                this.removeZoom();
-            },
 
             /**
-             * Generates gallery
-             * @param {string} key - a key of an object with images and options
+             * Shows Main image wrapper
              */
-            generateGallery: function (key) {
-
-                this.currentGalleryKey = key;
-                this.currentImagesSet = this.gallery[key].images;
-
-                this.generateMainImage(this.currentImagesSet);
-                this.generateGalleryThumbs(this.currentImagesSet);
-
-                if (this.isMobile) {
-                    this.hideMainImage();
-                }
-            },
-
             showMainImage: function () {
                 $('.' + this.mainElWrapper).show();
             },
 
+            /**
+             * Hides Main image wrapper
+             */
             hideMainImage: function () {
-                $('.' + this.mainElWrapper).hide();
+                if ($('#' + this.mobileSliderId).children().length) {
+                    $('.' + this.mainElWrapper).hide();
+                }
             },
 
+            /**
+             * Shows Loader element
+             */
             showLoader: function () {
                 $('.' + this.loader).show();
             },
 
+            /**
+             * Hides Loader element
+             */
             hideLoader: function () {
                 $('.' + this.loader).hide();
             },
@@ -137,7 +173,7 @@ var ONEPICA = ONEPICA || {};
              * @param {string} imagesData.label - image alt
              * @param {string} imagesData.thumb - image src
              * @param {bool} imagesData.isBase - is image a base image flag
-             *
+             * @returns {object} {} - an object with images data
              */
             findBaseImage: function (imagesData) {
                 if (typeof imagesData === 'undefined') {
@@ -166,17 +202,15 @@ var ONEPICA = ONEPICA || {};
             /**
              * Generates Main Image object basing on images object
              */
-            generateMainImage: function () {
+            initMainImage: function () {
                 var self = this,
                     el = $('.' + this.mainEl);
                 el
                     .addClass('loading')
                     .on('load', function () {
-                        el.removeClass('loading');
                         self.hideLoader();
-                        self.isLoading = false;
-                        console.log(self.isLoading);
-
+                        self.addZoom();
+                        self.isImageLoading = false;
                     })
                     .on('error', function () {
                         el
@@ -184,31 +218,35 @@ var ONEPICA = ONEPICA || {};
                             .attr('data-zoom-image', self.params.noImageUrl);
                         self.noImageIndex = el.attr('data-image-index');
                     });
-
-                if (this.isLoading) {
-                    console.log(this.isLoading);
+                if (this.isImageLoading) {
                     this.showLoader();
-                    this.makeThumbActive(el);
                 }
             },
-
             /**
              * Generates images thumbs from images object
              */
-            generateGalleryThumbs: function () {
+            initGalleryThumbs: function () {
                 var self = this;
 
-                $('.' + this.thumbLink).each(function () {
+                $('.' + this.thumbElement).each(function () {
                     $(this)
-                        .on('click', function (e) {
-                            e.preventDefault();
-                            self.switchGalleryImage($(this).attr('data-image-index'));
-                            self.makeThumbActive($(this));
-                            if (self.isMobileSliderEnabled) {
-                                self.mobileSliderHolder.goToSlide($(this).attr('data-image-index'));
-                            }
-                        })
                         .find('img')
+                        .on('load', function () {
+                            $(this).animate({
+                                opacity: 1
+                            })
+                                .closest('a')
+                                .on('click', function (e) {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    if ($(this).hasClass(self.thumbLinkActive)) {
+                                        return;
+                                    }
+                                    self.switchGalleryImage($(this).attr('data-image-index'));
+                                    self.makeThumbActive($(this));
+                                    self.addZoom();
+                                });
+                        })
                         .on('error', function () {
                             $(this).attr('src', self.params.noImageUrl);
                             $(this)
@@ -218,17 +256,19 @@ var ONEPICA = ONEPICA || {};
                             self.noImageIndex = $(this).parent().attr('data-image-index');
                         });
                 });
-
-                $('#' + self.mobileSliderId).find('img').each(function () {
-                    $(this).on('error', function () {
-                        $(this)
-                            .attr('src', self.params.noImageUrl);
-                    });
-                });
-
                 this.makeThumbActive($('.' + this.mainEl));
             },
 
+            initSliderElements: function () {
+                var self = this;
+                $('#' + self.mobileSliderId).find('img').each(function () {
+                    $(this)
+                        .on('error', function () {
+                            $(this)
+                                .attr('src', self.params.noImageUrl);
+                        });
+                });
+            },
             /**
              * Zoom resize initialization
              * Sets timeout to prevent resize event fire multiple times
@@ -261,11 +301,10 @@ var ONEPICA = ONEPICA || {};
                         setTimeout(checkResizeProgress, self.params.baseParams.resizeTimeout);
                         resizeInProgress = false;
                     } else {
-                        console.log($('#' + self.mainElId).width());
-                        console.log($('#' + self.mainElId).height());
-                        self.hideLoader();
-                        self.addZoom($('#' + self.mainElId).width(), $('#' + self.mainElId).height());
-
+                        if (!self.isImageLoading) {
+                            self.hideLoader();
+                        }
+                        self.addZoom();
                         zoomExists = true;
                     }
                 }
@@ -276,9 +315,9 @@ var ONEPICA = ONEPICA || {};
              */
             addMobileSlider: function () {
                 var self = this,
-                    sliderID = $('#' + self.mobileSliderId),
-                    sliderEl = sliderID.find('.' + self.thumb).find('img');
-                if (!this.isMobile) {
+                    sliderID = $('#' + self.mobileSliderId);
+
+                if (!sliderID.length) {
                     return;
                 }
                 this.mobileSliderHolder = sliderID.bxSlider({
@@ -293,9 +332,11 @@ var ONEPICA = ONEPICA || {};
                         self.currentThumbIndex = currentSlide.attr('data-image-index');
                         self.switchGalleryImage(self.currentThumbIndex);
                         self.makeThumbActive(currentSlide);
+                    },
+                    onSliderLoad: function () {
+                        self.isMobileSliderEnabled = true;
                     }
                 });
-                this.isMobileSliderEnabled = true;
             },
 
             /**
@@ -340,9 +381,6 @@ var ONEPICA = ONEPICA || {};
                 $links
                     .find("[data-image-index='" + index + "']")
                     .addClass(this.thumbLinkActive);
-                this.addZoom();
-                console.log('makeActive');
-
             },
 
             /**
@@ -356,8 +394,6 @@ var ONEPICA = ONEPICA || {};
                 if (this.isMobile || this.params.isQuickView) {
                     return;
                 }
-                console.log('zoom');
-
                 var mainImage = $('#' + this.mainElId);
 
                 if (!this.isZoomActive && mainImage.attr('data-image-index') !== this.noImageIndex) {
@@ -365,8 +401,6 @@ var ONEPICA = ONEPICA || {};
                         zoomWindowWidth: width ? width : mainImage.width(),
                         zoomWindowHeight: height ? height : mainImage.height()
                     }));
-                    console.log( mainImage.width());
-                    console.log( mainImage.width());
                     this.isZoomActive = true;
                 }
             },
@@ -378,6 +412,7 @@ var ONEPICA = ONEPICA || {};
                 if (!this.isZoomActive) {
                     return;
                 }
+
                 var image = $('.' + this.mainEl);
                 $('.zoomContainer').remove();
                 image.removeData('elevateZoom');
@@ -386,18 +421,47 @@ var ONEPICA = ONEPICA || {};
             },
 
             /**
+             * Removes generated gallery
+             */
+            removeGallery: function () {
+                this.$galleryHolderElement.empty();
+
+                this.isMobileSliderEnabled = false;
+                this.currentThumbIndex = 0;
+                this.noImageIndex = 'undefined';
+                this.isImageLoading = true;
+
+                this.removeZoom();
+            },
+
+            /**
+             * Generates gallery
+             */
+            initGallery: function () {
+
+                this.initMainImage();
+                this.initGalleryThumbs();
+                this.initSliderElements();
+
+                this.initZoomResize();
+
+                if (this.isMobile) {
+                    this.hideMainImage();
+                }
+            },
+            /**
              * Initialization of desktop view
              * @param {object} self - a main object to refer
              */
             initDesktop: function (self) {
                 self.isMobile = false;
 
+                self.removeMobileSlider();
+
                 self.showMainImage();
 
-                self.generateGallery(self.currentGalleryKey);
-                if (self.isMobileSliderEnabled) {
-                    self.removeMobileSlider();
-                }
+                self.initGallery();
+
             },
 
             /**
@@ -407,11 +471,9 @@ var ONEPICA = ONEPICA || {};
             initMobile: function (self) {
                 self.isMobile = true;
 
-                self.generateGallery(self.currentGalleryKey);
+                self.initGallery();
 
                 self.removeZoom();
-
-                self.hideMainImage();
                 self.hideLoader();
 
                 if (!self.isMobileSliderEnabled) {
@@ -434,51 +496,56 @@ var ONEPICA = ONEPICA || {};
 
                 this.params = $.extend(true, {}, defaults, settings);
                 this.currentGalleryKey = this.params.mainGallerySet;
-                this.currentImagesSet = this.gallery[this.currentGalleryKey].images;
+
                 this.$galleryHolderElement = $(containerSelector);
                 this.startingImage = this.findBaseImage(this.gallery[this.currentGalleryKey].images);
                 this.currentThumbIndex = this.startingImage.index;
 
-                this.initialize();
+                this.initializeElements();
 
-                this.generateHtml(this.getGalleryObject(this.currentGalleryKey));
+                this.generateHtml(this.getCurrentGalleryData(this.currentGalleryKey));
 
-                if (this.isLoading) {
-                    if (this.params.isQuickView) {
-                        this.initDesktop(self);
-                    }
-                    this.initZoomResize();
-
-                    $(window).on("mediaTD",
-                        function () {
-                            self.initDesktop(self);
-                        }
-                    );
-                    $(window).on("mediaM",
-                        function () {
-                            self.initMobile(self);
-                        }
-                    );
+                if (this.params.isQuickView) {
+                    this.initDesktop(self);
                 }
+
+                $(window).on("mediaTD",
+                    function () {
+                        self.initDesktop(self);
+                    }
+                );
+                $(window).on("mediaM",
+                    function () {
+                        self.initMobile(self);
+                    }
+                );
             },
             /**
              * @param {string} galleryKey - a key of gallery view to generate new gallery
-             * @returns {object} - an object with current gallery data
+             * @returns {object} data - an object with current gallery data
              * */
-            getGalleryObject: function (galleryKey) {
+            getCurrentGalleryData: function (galleryKey) {
+                var data = {};
+
                 if (typeof this.gallery[galleryKey].placeholder !== 'undefined') {
-                    return {
-                        gal: this.gallery,
-                        key: this.gallery[galleryKey],
+                    data.placeholder = {
                         placeholderThumb: this.gallery[galleryKey].placeholder.thumb,
                         placeholderLabel: this.gallery[galleryKey].placeholder.label
-                    }
+                    };
                 }
-                return {
-                    gal: this.gallery,
-                    key: this.gallery[galleryKey],
-                    baseImage: this.findBaseImage(this.gallery[galleryKey].images)
-                };
+
+                if (typeof this.gallery[galleryKey].images !== 'undefined') {
+                    if (this.gallery[galleryKey].images.length > 1) {
+                        data.images = this.gallery[galleryKey].images;
+                    }
+                    data.baseImage = this.findBaseImage(this.gallery[galleryKey].images);
+                }
+
+                if (!this.params.isQuickView) {
+                    data.videos = this.gallery.videos;
+                }
+
+                return data;
             },
 
             generateHtml: function (data) {
@@ -496,16 +563,16 @@ var ONEPICA = ONEPICA || {};
                 this.removeGallery();
                 this.sortImages(galleryKey);
 
-                this.generateHtml(this.getGalleryObject(galleryKey));
+                this.generateHtml(this.getCurrentGalleryData(galleryKey));
 
-                this.generateGallery(galleryKey);
+                this.initGallery();
 
                 if (this.isMobile && !this.isMobileSliderEnabled) {
                     this.addMobileSlider();
                 }
-
-                this.currentImagesSet = galleryKey;
             }
         }
-    })();
-})(jQuery);
+    })
+    ();
+})
+(jQuery);
