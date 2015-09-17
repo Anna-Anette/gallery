@@ -453,6 +453,9 @@ img { max-width: 100%; display: block; }
 .product-view-image-thumb.active-thumb { cursor: default; }
 .product-view-image-thumb.active-thumb:after { content: ''; position: absolute; top: -3px; left: -3px; right: -3px; bottom: -3px; border: 2px solid #232323; }
 
+.mobile-slider-wrapper { display: none; }
+@media only screen and (max-width: 767px) { .mobile-slider-wrapper { display: block; } }
+
 #mobileSlider { display: none; }
 @media only screen and (max-width: 767px) { #mobileSlider { display: block; } }
 

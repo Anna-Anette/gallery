@@ -65,11 +65,6 @@ var ONEPICA = ONEPICA || {};
             isZoomActive: false,
 
             /**
-             * Indicates if Mobile view enabled
-             */
-            isMobile: false,
-
-            /**
              * Mobile gallery slider HTML element
              */
             mobileSliderHolder: '',
@@ -87,6 +82,11 @@ var ONEPICA = ONEPICA || {};
              * Indicates if mobile slider enabled
              */
             isMobileSliderEnabled: false,
+
+            /**
+             * Indicates if mobile slider is loading
+             */
+            isSliderLoading: false,
 
             /**
              * Current thumb index
@@ -260,8 +260,9 @@ var ONEPICA = ONEPICA || {};
             },
 
             initSliderElements: function () {
-                var self = this;
-                $('#' + self.mobileSliderId).find('img').each(function () {
+                var self = this,
+                    sliderId = $('#' + this.mobileSliderId);
+                sliderId.find('img').each(function () {
                     $(this)
                         .on('error', function () {
                             $(this)
@@ -269,6 +270,7 @@ var ONEPICA = ONEPICA || {};
                         });
                 });
             },
+
             /**
              * Zoom resize initialization
              * Sets timeout to prevent resize event fire multiple times
@@ -320,6 +322,13 @@ var ONEPICA = ONEPICA || {};
                 if (!sliderID.length) {
                     return;
                 }
+
+                if (self.isMobileSliderEnabled || self.isSliderLoading ){
+                    return;
+                }
+
+                self.isSliderLoading = true;
+
                 this.mobileSliderHolder = sliderID.bxSlider({
                     pager: self.params.sliderParams.pager,
                     startSlide: self.currentThumbIndex,
@@ -334,6 +343,7 @@ var ONEPICA = ONEPICA || {};
                         self.makeThumbActive(currentSlide);
                     },
                     onSliderLoad: function () {
+                        self.isSliderLoading = false;
                         self.isMobileSliderEnabled = true;
                     }
                 });
@@ -391,7 +401,7 @@ var ONEPICA = ONEPICA || {};
              */
             addZoom: function (width, height) {
                 var self = this;
-                if (this.isMobile || this.params.isQuickView) {
+                if ($.mediaM || this.params.isQuickView) {
                     return;
                 }
                 var mainImage = $('#' + this.mainElId);
@@ -445,7 +455,7 @@ var ONEPICA = ONEPICA || {};
 
                 this.initZoomResize();
 
-                if (this.isMobile) {
+                if ($.mediaM) {
                     this.hideMainImage();
                 }
             },
@@ -454,7 +464,6 @@ var ONEPICA = ONEPICA || {};
              * @param {object} self - a main object to refer
              */
             initDesktop: function (self) {
-                self.isMobile = false;
 
                 self.removeMobileSlider();
 
@@ -469,7 +478,6 @@ var ONEPICA = ONEPICA || {};
              * @param {object} self - a main object to refer
              */
             initMobile: function (self) {
-                self.isMobile = true;
 
                 self.initGallery();
 
@@ -567,7 +575,7 @@ var ONEPICA = ONEPICA || {};
 
                 this.initGallery();
 
-                if (this.isMobile && !this.isMobileSliderEnabled) {
+                if ($.mediaM && !this.isMobileSliderEnabled) {
                     this.addMobileSlider();
                 }
             }

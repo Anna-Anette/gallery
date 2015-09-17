@@ -61,6 +61,12 @@ img { max-width: 100%; display: block; }
         }
     }
 }
+.mobile-slider-wrapper {
+    display: none;
+    @include mobile {
+        display: block;
+    }
+}
 #mobileSlider {
     display: none;
     @include mobile {
