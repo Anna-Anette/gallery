@@ -13,9 +13,7 @@ var ONEPICA = ONEPICA || {};
             noImageUrl: "http://36.media.tumblr.com/d226f2dc0af8889dedb6ae010d796595/tumblr_nnkkezir8Z1topm99o1_1280.jpg",
 
             baseParams: {
-                mainImageWrapperClass: 'js-main-image-wrapper',
                 mainImageClass: 'js-main-image',
-                mainImageID: 'jsMainImage',
 
                 thumbClassActive: 'active-thumb',
                 thumbContainerId: 'thumbsContainer',
@@ -121,9 +119,7 @@ var ONEPICA = ONEPICA || {};
              * Initialization of main elements
              */
             initializeElements: function () {
-                this.mainEl = this.params.baseParams.mainImageClass;
-                this.mainElId = this.params.baseParams.mainImageID;
-                this.mainElWrapper = this.params.baseParams.mainImageWrapperClass;
+                this.mainImage = this.params.baseParams.mainImageClass;
 
                 this.loader = this.params.baseParams.loaderClass;
 
@@ -133,23 +129,6 @@ var ONEPICA = ONEPICA || {};
                 this.thumbLinkActive = this.params.baseParams.thumbClassActive;
 
                 this.mobileSliderId = this.params.baseParams.mobileSliderId;
-            },
-
-
-            /**
-             * Shows Main image wrapper
-             */
-            showMainImage: function () {
-                $('.' + this.mainElWrapper).show();
-            },
-
-            /**
-             * Hides Main image wrapper
-             */
-            hideMainImage: function () {
-                if ($('#' + this.mobileSliderId).children().length) {
-                    $('.' + this.mainElWrapper).hide();
-                }
             },
 
             /**
@@ -204,9 +183,8 @@ var ONEPICA = ONEPICA || {};
              */
             initMainImage: function () {
                 var self = this,
-                    el = $('.' + this.mainEl);
+                    el = $('.' + this.mainImage);
                 el
-                    .addClass('loading')
                     .on('load', function () {
                         self.hideLoader();
                         self.addZoom();
@@ -242,6 +220,7 @@ var ONEPICA = ONEPICA || {};
                                     if ($(this).hasClass(self.thumbLinkActive)) {
                                         return;
                                     }
+                                    self.removeZoom();
                                     self.switchGalleryImage($(this).attr('data-image-index'));
                                     self.makeThumbActive($(this));
                                     self.addZoom();
@@ -256,7 +235,7 @@ var ONEPICA = ONEPICA || {};
                             self.noImageIndex = $(this).parent().attr('data-image-index');
                         });
                 });
-                this.makeThumbActive($('.' + this.mainEl));
+                this.makeThumbActive($('.' + this.mainImage));
             },
 
             initSliderElements: function () {
@@ -365,7 +344,7 @@ var ONEPICA = ONEPICA || {};
              * @param {number} index - an index of new image to switch to
              */
             switchGalleryImage: function (index) {
-                var mainImage = this.$galleryHolderElement.find($('.' + this.mainEl)),
+                var mainImage = this.$galleryHolderElement.find($('.' + this.mainImage)),
                     newImage = $('#' + this.thumbContainerId).find("[data-image-index='" + index + "']");
 
                 this.currentThumbIndex = index;
@@ -386,7 +365,6 @@ var ONEPICA = ONEPICA || {};
                 $links
                     .find('.' + this.thumbLink)
                     .removeClass(this.thumbLinkActive);
-                this.removeZoom();
 
                 $links
                     .find("[data-image-index='" + index + "']")
@@ -404,7 +382,7 @@ var ONEPICA = ONEPICA || {};
                 if ($.mediaM || this.params.isQuickView) {
                     return;
                 }
-                var mainImage = $('#' + this.mainElId);
+                var mainImage = $('.' + this.mainImage);
 
                 if (!this.isZoomActive && mainImage.attr('data-image-index') !== this.noImageIndex) {
                     mainImage.elevateZoom($.extend({}, self.params.zoomParams, {
@@ -423,7 +401,7 @@ var ONEPICA = ONEPICA || {};
                     return;
                 }
 
-                var image = $('.' + this.mainEl);
+                var image = $('.' + this.mainImage);
                 $('.zoomContainer').remove();
                 image.removeData('elevateZoom');
                 image.removeData('zoomImage');
@@ -454,10 +432,6 @@ var ONEPICA = ONEPICA || {};
                 this.initSliderElements();
 
                 this.initZoomResize();
-
-                if ($.mediaM) {
-                    this.hideMainImage();
-                }
             },
             /**
              * Initialization of desktop view
@@ -466,8 +440,6 @@ var ONEPICA = ONEPICA || {};
             initDesktop: function (self) {
 
                 self.removeMobileSlider();
-
-                self.showMainImage();
 
                 self.initGallery();
 
@@ -498,11 +470,13 @@ var ONEPICA = ONEPICA || {};
              */
             init: function (imagesData, containerSelector, settings) {
                 var self = this;
+
                 this.gallery = imagesData;
 
                 this.sortImages(self.params.mainGallerySet);
 
                 this.params = $.extend(true, {}, defaults, settings);
+
                 this.currentGalleryKey = this.params.mainGallerySet;
 
                 this.$galleryHolderElement = $(containerSelector);

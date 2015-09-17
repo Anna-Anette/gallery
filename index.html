@@ -40,7 +40,7 @@
 <script type="text/html" id="template">
     <% if (typeof images !== 'undefined' && images.length > 1) { %>
     <div class="mobile-slider-wrapper">
-        <ul id="mobileSlider" class="mobileSlider">
+        <ul id="mobileSlider" class="mobile-slider">
             <% for ( var i = 0; i < images.length; i++ ) { %>
             <li class="product-image-thumb" data-image-index="<%=i%>">
                 <img src="<%=images[i].thumb%>" alt="<%=images[i].label%>">
@@ -49,21 +49,23 @@
         </ul>
     </div>
     <% } %>
-    <div class="js-main-image-wrapper main-image-wrapper">
-        <% if (typeof baseImage !== 'undefined') { %>
-        <img id="jsMainImage"
-             class="js-main-image"
+    <% if (typeof baseImage !== 'undefined') { %>
+    <div class="js-main-image-wrapper main-image-wrapper <% if (typeof images == 'undefined') { %> main-image-only<% } %>">
+        <img class="js-main-image main-image"
              src="<%=baseImage.src%>"
              alt="<%=baseImage.label%>"
              data-image-index="<%=baseImage.index%>"
              data-zoom-image="<%=baseImage.src%>" />
         <div class="loader-placeholder js-loader"></div>
-        <% } else { %>
-        <img class="js-main-image"
+    </div>
+
+    <% } else { %>
+    <div class="main-image-placeholder-wrapper">
+        <img class="main-image-placeholder"
              src="<%=placeholder.placeholderThumb%>"
              alt="<%=placeholder.placeholderLabel%>" />
-        <% } %>
     </div>
+    <% } %>
     <% if (typeof images !== 'undefined' || typeof videos !== 'undefined') { %>
     <h3 class="product-view-subtitle">More Views</h3>
     <ul id="thumbsContainer" class="product-view-image-thumbs">
