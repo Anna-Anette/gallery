@@ -12,7 +12,7 @@ var ONEPICA = ONEPICA || {};
 
             isQuickView: false,
 
-            mainGallerySet: 'gallery_main',
+            mainGallerySet: 'gallery_error',
             noImageUrl: "http://36.media.tumblr.com/d226f2dc0af8889dedb6ae010d796595/tumblr_nnkkezir8Z1topm99o1_1280.jpg",
 
             baseParams: {
@@ -144,39 +144,6 @@ var ONEPICA = ONEPICA || {};
         },
 
         /**
-         * Finds base image basing on images object
-         *
-         * @param {object} imagesData - an object with images
-         * @param {string} imagesData.label - image alt
-         * @param {string} imagesData.thumb - image src
-         * @param {bool} imagesData.isBase - is image a base image flag
-         * @returns {object} {} - an object with images data
-         */
-        findBaseImage: function (imagesData) {
-            if (typeof imagesData === 'undefined') {
-                return {
-                    index: 0,
-                    label: this.gallery[this.currentGalleryKey].placeholder.label,
-                    thumb: this.gallery[this.currentGalleryKey].placeholder.thumb
-                };
-            }
-            for (var i = 0; i < imagesData.length; i++) {
-                if (imagesData[i].isBase) {
-                    return {
-                        index: i,
-                        label: imagesData[i].label,
-                        src: imagesData[i].thumb
-                    };
-                }
-            }
-            return {
-                index: 0,
-                label: imagesData[0].label,
-                src: imagesData[0].thumb
-            }
-        },
-
-        /**
          * Generates Main Image object basing on images object
          */
         initMainImage: function () {
@@ -211,20 +178,21 @@ var ONEPICA = ONEPICA || {};
                         $(this).animate({
                             opacity: 1
                         });
-                        links.eq(index).on('click', function () {
+                        links.eq(index).on('click', function (e) {
+                            e.preventDefault();
+                            e.stopPropagation();
                             if (index === self.currentThumbIndex) {
                                 return;
                             }
                             self.removeZoom();
                             self.switchGalleryImage(index);
                             self.addZoom();
-                            return false;
                         });
                     })
                     .on('error', function () {
                         $(this).attr('src', self.params.noImageUrl);
                         links.eq(index)
-                            .attr('data-zoom-image', self.params.noImageUrl)
+                            .attr('data-zoom-image', self.params.noImageUrl);
                         self.noImageIndex = index;
                     });
             });
@@ -261,7 +229,6 @@ var ONEPICA = ONEPICA || {};
 
                 self.removeZoom();
                 self.showLoader();
-
                 clearTimeout(self.zoomTimeout);
                 self.zoomTimeout = setTimeout(function () {
                     if (!self.isImageLoading) {
@@ -352,7 +319,6 @@ var ONEPICA = ONEPICA || {};
                 return;
             }
             var mainImage = this.selectors.mainImage;
-
             if (!this.isZoomActive && this.currentThumbIndex !== this.noImageIndex) {
                 mainImage.elevateZoom($.extend({}, self.params.zoomParams, {
                     zoomWindowWidth: width ? width : mainImage.width(),
@@ -369,7 +335,6 @@ var ONEPICA = ONEPICA || {};
             if (!this.isZoomActive) {
                 return;
             }
-
             var image = this.selectors.mainImage;
             $('.zoomContainer').remove();
             image.removeData('elevateZoom');
@@ -395,7 +360,10 @@ var ONEPICA = ONEPICA || {};
          * Generates gallery
          */
         initGallery: function (key) {
-            this.generateAndInitHtml(key);
+
+            this.sortImages(key);
+
+            this.generateAndInitHtml( this.getCurrentGalleryData(key));
             this.initializeSelectors();
 
             this.initMainImage();
@@ -417,7 +385,6 @@ var ONEPICA = ONEPICA || {};
          */
         initMobile: function (e) {
             var self = e.data.self;
-
             self.removeZoom();
             self.hideLoader();
             self.addMobileSlider();
@@ -430,25 +397,21 @@ var ONEPICA = ONEPICA || {};
         getCurrentGalleryData: function (galleryKey) {
             var data = {},
                 gallery = this.gallery[galleryKey];
-
             if (typeof gallery.placeholder !== 'undefined') {
                 data.placeholder = {
                     placeholderThumb: gallery.placeholder.thumb,
                     placeholderLabel: gallery.placeholder.label
                 };
             }
-
             if (typeof gallery.images !== 'undefined') {
                 if (gallery.images.length > 1) {
                     data.images = gallery.images;
                 }
-                data.baseImage = this.findBaseImage(gallery.images);
+                data.baseImage = gallery.images[0];
             }
-
             if (!this.params.isQuickView) {
                 data.videos = this.gallery.videos;
             }
-
             return data;
         },
 
@@ -482,25 +445,16 @@ var ONEPICA = ONEPICA || {};
          * @param {object} [settings] - extra settings for gallery
          */
         init: function (imagesData, containerSelector, settings) {
-            var self = this;
 
             this.gallery = imagesData;
-
             this.params = $.extend(true, {}, this.defaults, settings);
-
             this.currentGalleryKey = this.params.mainGallerySet;
             this.$galleryHolderElement = $(containerSelector);
 
-            this.sortImages(self.params.mainGallerySet);
-
-            this.startingImage = this.findBaseImage(this.gallery[this.currentGalleryKey].images);
-            this.currentThumbIndex = this.startingImage.index;
-
-            this.initGallery(this.getCurrentGalleryData(this.currentGalleryKey));
+            this.initGallery(this.currentGalleryKey);
 
             $(window).on("mediaTD", {self: this}, this.initDesktop);
             $(window).on("mediaM", {self: this}, this.initMobile);
-
         },
 
         /**
@@ -514,10 +468,9 @@ var ONEPICA = ONEPICA || {};
                     self: this
                 }
             };
-            this.removeGallery();
-            this.sortImages(galleryKey);
 
-            this.initGallery(this.getCurrentGalleryData(galleryKey));
+            this.removeGallery();
+            this.initGallery(galleryKey);
 
             if ($.mediaM) {
                 this.initMobile(e);

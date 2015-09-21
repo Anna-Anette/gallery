@@ -52,9 +52,9 @@
     <% if (typeof baseImage !== 'undefined') { %>
     <div class="js-main-image-wrapper main-image-wrapper <% if (typeof images == 'undefined') { %> main-image-only<% } %>">
         <img class="js-main-image main-image"
-             src="<%=baseImage.src%>"
+             src="<%=baseImage.thumb%>"
              alt="<%=baseImage.label%>"
-             data-zoom-image="<%=baseImage.src%>" />
+             data-zoom-image="<%=baseImage.thumb%>" />
         <div class="loader-placeholder js-loader"></div>
     </div>
 
