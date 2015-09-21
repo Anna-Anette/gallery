@@ -42,8 +42,8 @@
     <div class="mobile-slider-wrapper">
         <ul id="mobileSlider" class="mobile-slider">
             <% for ( var i = 0; i < images.length; i++ ) { %>
-            <li class="product-image-thumb" data-image-index="<%=i%>">
-                <img src="<%=images[i].thumb%>" alt="<%=images[i].label%>">
+            <li>
+                <img src="<%=images[i].thumb%>" alt="<%=images[i].label%>"  class="js-slider-images" />
             </li>
             <% } %>
         </ul>
@@ -54,7 +54,6 @@
         <img class="js-main-image main-image"
              src="<%=baseImage.src%>"
              alt="<%=baseImage.label%>"
-             data-image-index="<%=baseImage.index%>"
              data-zoom-image="<%=baseImage.src%>" />
         <div class="loader-placeholder js-loader"></div>
     </div>
@@ -68,15 +67,13 @@
     <% } %>
     <% if (typeof images !== 'undefined' || typeof videos !== 'undefined') { %>
     <h3 class="product-view-subtitle">More Views</h3>
-    <ul id="thumbsContainer" class="product-view-image-thumbs">
+    <ul class="product-view-image-thumbs">
         <% if (typeof images !== 'undefined' && images.length > 1) { %>
         <% for ( var i = 0; i < images.length; i++ ) { %>
         <li class="product-image-thumb js-product-image-thumb">
             <a class="js-thumb-link product-view-image-thumb product-view-image-link"
-               data-image-index="<%=i%>"
                href="#"
-               data-zoom-image="<%=images[i].thumb%>"
-               data-image="<%=images[i].thumb%>">
+               data-zoom-image="<%=images[i].thumb%>">
                 <img class="js-thumb-image" src="<%=images[i].thumb%>" alt="<%=images[i].label%>" />
             </a>
         </li>

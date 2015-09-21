@@ -20,7 +20,7 @@ var galleryData = {
                 thumb: "http://iqlab.ua/test/gallery/thumb4.jpg"
             },
             {
-                isBase: false,
+                isBase: true,
                 label: "image #2",
                 thumb: "http://iqlab.ua/test/gallery/thumb5.jpg"
             },
@@ -45,7 +45,7 @@ var galleryData = {
                 thumb: "http://iqlab.ua/test/gallery/thumb0_000.png"
             },
             {
-                isBase: true,
+                isBase: false,
                 label: "image #1",
                 thumb: "http://iqlab.ua/test/gallery/thumb1.png"
             },

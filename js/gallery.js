@@ -2,10 +2,13 @@
 
 var ONEPICA = ONEPICA || {};
 (function ($) {
-    'use strict';
     ONEPICA.Gallery = ONEPICA.Gallery || {};
-    ONEPICA.Gallery = (function () {
-        var defaults = {
+    ONEPICA.Gallery = {
+
+        /**
+         * Main gallery params
+         */
+        defaults: {
 
             isQuickView: false,
 
@@ -16,9 +19,10 @@ var ONEPICA = ONEPICA || {};
                 mainImageClass: 'js-main-image',
 
                 thumbClassActive: 'active-thumb',
-                thumbContainerId: 'thumbsContainer',
                 thumbElement: 'js-product-image-thumb',
                 thumbLinkClass: 'js-thumb-link',
+                thumbImageClass: 'js-thumb-image',
+                sliderImageClass: 'js-slider-images',
 
                 loaderClass: 'js-loader',
                 mobileSliderId: 'mobileSlider',
@@ -26,7 +30,6 @@ var ONEPICA = ONEPICA || {};
             },
             zoomParams: {
                 cursor: 'crosshair',
-                responsive: true,
                 borderSize: 0,
                 zoomWindowOffetx: 20
             },
@@ -34,527 +37,493 @@ var ONEPICA = ONEPICA || {};
                 pager: false,
                 preloadImages: 'all'
             }
-        };
+        },
 
-        return {
-            /**
-             * Main gallery params
-             */
-            params: defaults,
+        /**
+         * Main gallery params
+         */
+        params: {},
 
-            /**
-             * Current gallery key
-             */
-            currentGalleryKey: '',
+        /**
+         * Current gallery key
+         */
+        currentGalleryKey: '',
 
-            /**
-             * Gallery HTML wrapper
-             */
-            $galleryHolderElement: '',
+        /**
+         * Gallery HTML wrapper
+         */
+        $galleryHolderElement: '',
 
-            /**
-             * Gallery starting image
-             */
-            startingImage: 0,
+        /**
+         * Gallery template element
+         */
+        $templateId: '#template',
 
-            /**
-             * Indicates if zoom is active
-             */
-            isZoomActive: false,
+        /**
+         * Gallery starting image
+         */
+        startingImage: 0,
 
-            /**
-             * Mobile gallery slider HTML element
-             */
-            mobileSliderHolder: '',
+        /**
+         * Indicates if zoom is active
+         */
+        isZoomActive: false,
 
-            /**
-             * Indicates if image is loading
-             */
-            isImageLoading: true,
+        /**
+         * Mobile gallery slider HTML element
+         */
+        mobileSliderHolder: '',
 
-            /**
-             * Reset params
-             */
+        /**
+         * Indicates if image is loading
+         */
+        isImageLoading: true,
 
-            /**
-             * Indicates if mobile slider enabled
-             */
-            isMobileSliderEnabled: false,
+        /**
+         * Reset params
+         */
 
-            /**
-             * Indicates if mobile slider is loading
-             */
-            isSliderLoading: false,
+        /**
+         * Indicates if mobile slider enabled
+         */
+        isMobileSliderEnabled: false,
 
-            /**
-             * Current thumb index
-             */
-            currentThumbIndex: 0,
+        /**
+         * Indicates if mobile slider is loading
+         */
+        isSliderLoading: false,
 
-            /**
-             * Index of a broken url image
-             */
-            noImageIndex: 'undefined',
+        /**
+         * Current thumb index
+         */
+        currentThumbIndex: 0,
 
-            /**
-             * Gallery selectors
-             */
-            gallery: {},
+        /**
+         * Index of a broken url image
+         */
+        noImageIndex: 'undefined',
 
-            /**
-             * Sort Images array according to base image
-             */
-            sortImages: function (key) {
-                if (typeof this.gallery[key].images === 'undefined') {
-                    return;
+        /**
+         * Gallery selectors
+         */
+        gallery: {},
+
+        /**
+         * Sort Images array according to base image
+         */
+        sortImages: function (key) {
+            var oldImages = this.gallery[key].images,
+                newImages = [];
+
+            if (typeof oldImages === 'undefined') {
+                return;
+            }
+            for (var i = 0; i < oldImages.length; i++) {
+                if (oldImages[i].isBase) {
+                    newImages.unshift(oldImages[i]);
+                } else {
+                    newImages.push(oldImages[i]);
                 }
-                for (var i = 0; i < this.gallery[key].images.length; i++) {
-                    if (this.gallery[key].images[i].isBase) {
-                        Array.prototype.unshift.apply(this.gallery[key].images, this.gallery[key].images.splice(i, this.gallery[key].images.length));
-                    }
-                }
-            },
 
-            /**
-             * Initialization of main elements
-             */
-            initializeElements: function () {
-                this.mainImage = this.params.baseParams.mainImageClass;
+                this.gallery[key].images = newImages;
+            }
+        },
 
-                this.loader = this.params.baseParams.loaderClass;
+        /**
+         * Shows Loader element
+         */
+        showLoader: function () {
+            this.selectors.loader.show();
+        },
 
-                this.thumbContainerId = this.params.baseParams.thumbContainerId;
-                this.thumbElement = this.params.baseParams.thumbElement;
-                this.thumbLink = this.params.baseParams.thumbLinkClass;
-                this.thumbLinkActive = this.params.baseParams.thumbClassActive;
+        /**
+         * Hides Loader element
+         */
+        hideLoader: function () {
+            this.selectors.loader.hide();
+        },
 
-                this.mobileSliderId = this.params.baseParams.mobileSliderId;
-            },
-
-            /**
-             * Shows Loader element
-             */
-            showLoader: function () {
-                $('.' + this.loader).show();
-            },
-
-            /**
-             * Hides Loader element
-             */
-            hideLoader: function () {
-                $('.' + this.loader).hide();
-            },
-
-            /**
-             * Finds base image basing on images object
-             *
-             * @param {object} imagesData - an object with images
-             * @param {string} imagesData.label - image alt
-             * @param {string} imagesData.thumb - image src
-             * @param {bool} imagesData.isBase - is image a base image flag
-             * @returns {object} {} - an object with images data
-             */
-            findBaseImage: function (imagesData) {
-                if (typeof imagesData === 'undefined') {
-                    return {
-                        index: 0,
-                        label: this.gallery[this.currentGalleryKey].placeholder.label,
-                        thumb: this.gallery[this.currentGalleryKey].placeholder.thumb
-                    };
-                }
-                for (var i = 0; i < imagesData.length; i++) {
-                    if (imagesData[i].isBase) {
-                        return {
-                            index: i,
-                            label: imagesData[i].label,
-                            src: imagesData[i].thumb
-                        };
-                    }
-                }
+        /**
+         * Finds base image basing on images object
+         *
+         * @param {object} imagesData - an object with images
+         * @param {string} imagesData.label - image alt
+         * @param {string} imagesData.thumb - image src
+         * @param {bool} imagesData.isBase - is image a base image flag
+         * @returns {object} {} - an object with images data
+         */
+        findBaseImage: function (imagesData) {
+            if (typeof imagesData === 'undefined') {
                 return {
                     index: 0,
-                    label: imagesData[0].label,
-                    src: imagesData[0].thumb
-                }
-            },
-
-            /**
-             * Generates Main Image object basing on images object
-             */
-            initMainImage: function () {
-                var self = this,
-                    el = $('.' + this.mainImage);
-                el
-                    .on('load', function () {
-                        self.hideLoader();
-                        self.addZoom();
-                        self.isImageLoading = false;
-                    })
-                    .on('error', function () {
-                        el
-                            .attr('src', self.params.noImageUrl)
-                            .attr('data-zoom-image', self.params.noImageUrl);
-                        self.noImageIndex = el.attr('data-image-index');
-                    });
-                if (this.isImageLoading) {
-                    this.showLoader();
-                }
-            },
-            /**
-             * Generates images thumbs from images object
-             */
-            initGalleryThumbs: function () {
-                var self = this;
-
-                $('.' + this.thumbElement).each(function () {
-                    $(this)
-                        .find('img')
-                        .on('load', function () {
-                            $(this).animate({
-                                opacity: 1
-                            })
-                                .closest('a')
-                                .on('click', function (e) {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    if ($(this).hasClass(self.thumbLinkActive)) {
-                                        return;
-                                    }
-                                    self.removeZoom();
-                                    self.switchGalleryImage($(this).attr('data-image-index'));
-                                    self.makeThumbActive($(this));
-                                    self.addZoom();
-                                });
-                        })
-                        .on('error', function () {
-                            $(this).attr('src', self.params.noImageUrl);
-                            $(this)
-                                .parent()
-                                .attr('data-zoom-image', self.params.noImageUrl)
-                                .attr('data-image', self.params.noImageUrl);
-                            self.noImageIndex = $(this).parent().attr('data-image-index');
-                        });
-                });
-                this.makeThumbActive($('.' + this.mainImage));
-            },
-
-            initSliderElements: function () {
-                var self = this,
-                    sliderId = $('#' + this.mobileSliderId);
-                sliderId.find('img').each(function () {
-                    $(this)
-                        .on('error', function () {
-                            $(this)
-                                .attr('src', self.params.noImageUrl);
-                        });
-                });
-            },
-
-            /**
-             * Zoom resize initialization
-             * Sets timeout to prevent resize event fire multiple times
-             */
-            initZoomResize: function () {
-                var resizeInProgress = false,
-                    zoomExists = true,
-                    currentWindowWidth = window.innerWidth,
-                    self = this;
-
-                $(window).resize(function () {
-                    if (window.innerWidth == currentWindowWidth) {
-                        return;
-                    }
-
-                    currentWindowWidth = window.innerWidth;
-                    if (resizeInProgress === false) {
-                        if (zoomExists) {
-                            self.removeZoom();
-                            self.showLoader();
-                            zoomExists = false;
-                            setTimeout(checkResizeProgress, self.params.baseParams.resizeTimeout);
-                        }
-                    }
-                    resizeInProgress = true;
-                });
-
-                function checkResizeProgress() {
-                    if (resizeInProgress) {
-                        setTimeout(checkResizeProgress, self.params.baseParams.resizeTimeout);
-                        resizeInProgress = false;
-                    } else {
-                        if (!self.isImageLoading) {
-                            self.hideLoader();
-                        }
-                        self.addZoom();
-                        zoomExists = true;
-                    }
-                }
-            },
-
-            /**
-             * Adds mobile slider basing on images thumbs
-             */
-            addMobileSlider: function () {
-                var self = this,
-                    sliderID = $('#' + self.mobileSliderId);
-
-                if (!sliderID.length) {
-                    return;
-                }
-
-                if (self.isMobileSliderEnabled || self.isSliderLoading ){
-                    return;
-                }
-
-                self.isSliderLoading = true;
-
-                this.mobileSliderHolder = sliderID.bxSlider({
-                    pager: self.params.sliderParams.pager,
-                    startSlide: self.currentThumbIndex,
-                    onSlideNext: function (currentSlide) {
-                        self.currentThumbIndex = currentSlide.attr('data-image-index');
-                        self.switchGalleryImage(self.currentThumbIndex);
-                        self.makeThumbActive(currentSlide);
-                    },
-                    onSlidePrev: function (currentSlide) {
-                        self.currentThumbIndex = currentSlide.attr('data-image-index');
-                        self.switchGalleryImage(self.currentThumbIndex);
-                        self.makeThumbActive(currentSlide);
-                    },
-                    onSliderLoad: function () {
-                        self.isSliderLoading = false;
-                        self.isMobileSliderEnabled = true;
-                    }
-                });
-            },
-
-            /**
-             * Removes mobile slider
-             */
-            removeMobileSlider: function () {
-                if (this.isMobileSliderEnabled) {
-                    this.mobileSliderHolder.destroySlider();
-                    this.isMobileSliderEnabled = false;
-                }
-            },
-
-            /**
-             * Switches gallery image basing on index of a new image, emulates zoom functionality of image switch
-             *
-             * @param {number} index - an index of new image to switch to
-             */
-            switchGalleryImage: function (index) {
-                var mainImage = this.$galleryHolderElement.find($('.' + this.mainImage)),
-                    newImage = $('#' + this.thumbContainerId).find("[data-image-index='" + index + "']");
-
-                this.currentThumbIndex = index;
-                mainImage.attr('data-image-index', index);
-                mainImage.attr('data-zoom-image', $(newImage).attr('data-zoom-image'));
-                mainImage.attr('src', $(newImage).attr('data-zoom-image'));
-                mainImage.attr('alt', $(newImage).find('img').attr('alt'));
-            },
-
-            /**
-             * Makes gallery thumb active basing on index of a new image, emulates zoom functionality of image switch
-             *
-             *  @param {string} thumb - a thumb of image to switch to
-             */
-            makeThumbActive: function (thumb) {
-                var index = $(thumb).attr('data-image-index'),
-                    $links = $('#' + this.thumbContainerId);
-                $links
-                    .find('.' + this.thumbLink)
-                    .removeClass(this.thumbLinkActive);
-
-                $links
-                    .find("[data-image-index='" + index + "']")
-                    .addClass(this.thumbLinkActive);
-            },
-
-            /**
-             * Adds image zoom
-             *
-             * @param {string} [width] - width of image, to set zoom window width
-             * @param {string} [height] - height of image, to set zoom window height
-             */
-            addZoom: function (width, height) {
-                var self = this;
-                if ($.mediaM || this.params.isQuickView) {
-                    return;
-                }
-                var mainImage = $('.' + this.mainImage);
-
-                if (!this.isZoomActive && mainImage.attr('data-image-index') !== this.noImageIndex) {
-                    mainImage.elevateZoom($.extend({}, self.params.zoomParams, {
-                        zoomWindowWidth: width ? width : mainImage.width(),
-                        zoomWindowHeight: height ? height : mainImage.height()
-                    }));
-                    this.isZoomActive = true;
-                }
-            },
-
-            /**
-             * Removes image zoom
-             */
-            removeZoom: function () {
-                if (!this.isZoomActive) {
-                    return;
-                }
-
-                var image = $('.' + this.mainImage);
-                $('.zoomContainer').remove();
-                image.removeData('elevateZoom');
-                image.removeData('zoomImage');
-                this.isZoomActive = false;
-            },
-
-            /**
-             * Removes generated gallery
-             */
-            removeGallery: function () {
-                this.$galleryHolderElement.empty();
-
-                this.isMobileSliderEnabled = false;
-                this.currentThumbIndex = 0;
-                this.noImageIndex = 'undefined';
-                this.isImageLoading = true;
-
-                this.removeZoom();
-            },
-
-            /**
-             * Generates gallery
-             */
-            initGallery: function () {
-
-                this.initMainImage();
-                this.initGalleryThumbs();
-                this.initSliderElements();
-
-                this.initZoomResize();
-            },
-            /**
-             * Initialization of desktop view
-             * @param {object} self - a main object to refer
-             */
-            initDesktop: function (self) {
-
-                self.removeMobileSlider();
-
-                self.initGallery();
-
-            },
-
-            /**
-             * Initialization of mobile view
-             * @param {object} self - a main object to refer
-             */
-            initMobile: function (self) {
-
-                self.initGallery();
-
-                self.removeZoom();
-                self.hideLoader();
-
-                if (!self.isMobileSliderEnabled) {
-                    self.addMobileSlider();
-                }
-            },
-
-            /**
-             * Initialization of mobile view
-             *
-             * @param {object} imagesData - json with data
-             * @param {string} containerSelector - container for gallery
-             * @param {object} [settings] - extra settings for gallery
-             */
-            init: function (imagesData, containerSelector, settings) {
-                var self = this;
-
-                this.gallery = imagesData;
-
-                this.sortImages(self.params.mainGallerySet);
-
-                this.params = $.extend(true, {}, defaults, settings);
-
-                this.currentGalleryKey = this.params.mainGallerySet;
-
-                this.$galleryHolderElement = $(containerSelector);
-                this.startingImage = this.findBaseImage(this.gallery[this.currentGalleryKey].images);
-                this.currentThumbIndex = this.startingImage.index;
-
-                this.initializeElements();
-
-                this.generateHtml(this.getCurrentGalleryData(this.currentGalleryKey));
-
-                if (this.params.isQuickView) {
-                    this.initDesktop(self);
-                }
-
-                $(window).on("mediaTD",
-                    function () {
-                        self.initDesktop(self);
-                    }
-                );
-                $(window).on("mediaM",
-                    function () {
-                        self.initMobile(self);
-                    }
-                );
-            },
-            /**
-             * @param {string} galleryKey - a key of gallery view to generate new gallery
-             * @returns {object} data - an object with current gallery data
-             * */
-            getCurrentGalleryData: function (galleryKey) {
-                var data = {};
-
-                if (typeof this.gallery[galleryKey].placeholder !== 'undefined') {
-                    data.placeholder = {
-                        placeholderThumb: this.gallery[galleryKey].placeholder.thumb,
-                        placeholderLabel: this.gallery[galleryKey].placeholder.label
+                    label: this.gallery[this.currentGalleryKey].placeholder.label,
+                    thumb: this.gallery[this.currentGalleryKey].placeholder.thumb
+                };
+            }
+            for (var i = 0; i < imagesData.length; i++) {
+                if (imagesData[i].isBase) {
+                    return {
+                        index: i,
+                        label: imagesData[i].label,
+                        src: imagesData[i].thumb
                     };
                 }
+            }
+            return {
+                index: 0,
+                label: imagesData[0].label,
+                src: imagesData[0].thumb
+            }
+        },
 
-                if (typeof this.gallery[galleryKey].images !== 'undefined') {
-                    if (this.gallery[galleryKey].images.length > 1) {
-                        data.images = this.gallery[galleryKey].images;
+        /**
+         * Generates Main Image object basing on images object
+         */
+        initMainImage: function () {
+            var self = this,
+                el = this.selectors.mainImage;
+            el
+                .on('load', function () {
+                    self.hideLoader();
+                    self.addZoom();
+                    self.isImageLoading = false;
+                })
+                .on('error', function () {
+                    el
+                        .attr('src', self.params.noImageUrl)
+                        .attr('data-zoom-image', self.params.noImageUrl);
+                });
+            if (this.isImageLoading) {
+                this.showLoader();
+            }
+        },
+        /**
+         * Generates images thumbs from images object
+         */
+        initGalleryThumbs: function () {
+            var self = this,
+                images = this.selectors.thumbImages,
+                links = this.selectors.thumbLinks;
+
+            images.each(function (index) {
+                $(this)
+                    .on('load', function () {
+                        $(this).animate({
+                            opacity: 1
+                        });
+                        links.eq(index).on('click', function () {
+                            if (index === self.currentThumbIndex) {
+                                return;
+                            }
+                            self.removeZoom();
+                            self.switchGalleryImage(index);
+                            self.addZoom();
+                            return false;
+                        });
+                    })
+                    .on('error', function () {
+                        $(this).attr('src', self.params.noImageUrl);
+                        links.eq(index)
+                            .attr('data-zoom-image', self.params.noImageUrl)
+                        self.noImageIndex = index;
+                    });
+            });
+            this.makeThumbActive();
+        },
+
+        initSliderElements: function () {
+            var self = this,
+                sliderId = this.selectors.mobileSliderId;
+
+            sliderId.find('img').each(function () {
+                $(this)
+                    .on('error', function () {
+                        $(this)
+                            .attr('src', self.params.noImageUrl);
+                    });
+            });
+        },
+
+        /**
+         * Zoom resize initialization
+         * Sets timeout to prevent resize event fire multiple times
+         */
+        initZoomResize: function () {
+            var currentWindowWidth = window.innerWidth,
+                self = this;
+
+            $(window).resize(function () {
+                if (window.innerWidth == currentWindowWidth) {
+                    return;
+                }
+
+                currentWindowWidth = window.innerWidth;
+
+                self.removeZoom();
+                self.showLoader();
+
+                clearTimeout(self.zoomTimeout);
+                self.zoomTimeout = setTimeout(function () {
+                    if (!self.isImageLoading) {
+                        self.hideLoader();
                     }
-                    data.baseImage = this.findBaseImage(this.gallery[galleryKey].images);
+                    self.addZoom();
+                }, self.params.baseParams.resizeTimeout)
+            });
+        },
+
+        /**
+         * Adds mobile slider basing on images thumbs
+         */
+        addMobileSlider: function () {
+            if (!this.selectors.mobileSliderId.length) {
+                return;
+            }
+            if (this.isMobileSliderEnabled || this.isSliderLoading) {
+                return;
+            }
+
+            var self = this,
+                sliderId = this.selectors.mobileSliderId;
+
+            this.isSliderLoading = true;
+
+            this.mobileSliderHolder = sliderId.bxSlider({
+                pager: self.params.sliderParams.pager,
+                startSlide: self.currentThumbIndex,
+                onSlideAfter: function ($slideElement, oldIndex, newIndex) {
+                    self.switchGalleryImage(newIndex);
+                },
+                onSliderLoad: function () {
+                    self.isSliderLoading = false;
+                    self.isMobileSliderEnabled = true;
                 }
+            });
+        },
 
-                if (!this.params.isQuickView) {
-                    data.videos = this.gallery.videos;
+        /**
+         * Removes mobile slider
+         */
+        removeMobileSlider: function () {
+            if (this.isMobileSliderEnabled) {
+                this.mobileSliderHolder.destroySlider();
+                this.isMobileSliderEnabled = false;
+            }
+        },
+
+        /**
+         * Switches gallery image basing on index of a new image, emulates zoom functionality of image switch
+         *
+         * @param {number} index - an index of new image to switch to
+         */
+        switchGalleryImage: function (index) {
+            var mainImage = this.selectors.mainImage,
+                newThumb = this.selectors.thumbLinks.eq(index),
+                newThumbImage = this.selectors.thumbImages.eq(index);
+
+            this.currentThumbIndex = index;
+            mainImage.attr('data-zoom-image', newThumb.attr('data-zoom-image'));
+            mainImage.attr('src', newThumb.attr('data-zoom-image'));
+            mainImage.attr('alt', newThumbImage.attr('alt'));
+
+            this.makeThumbActive();
+        },
+
+        /**
+         * Makes gallery thumb active basing on index of a new image, emulates zoom functionality of image switch
+         */
+        makeThumbActive: function () {
+            var activeClass = this.params.baseParams.thumbClassActive;
+            this.selectors.thumbLinks
+                .removeClass(activeClass)
+                .eq(this.currentThumbIndex)
+                .addClass(activeClass);
+        },
+
+        /**
+         * Adds image zoom
+         *
+         * @param {string} [width] - width of image, to set zoom window width
+         * @param {string} [height] - height of image, to set zoom window height
+         */
+        addZoom: function (width, height) {
+            var self = this;
+            if ($.mediaM || this.params.isQuickView) {
+                return;
+            }
+            var mainImage = this.selectors.mainImage;
+
+            if (!this.isZoomActive && this.currentThumbIndex !== this.noImageIndex) {
+                mainImage.elevateZoom($.extend({}, self.params.zoomParams, {
+                    zoomWindowWidth: width ? width : mainImage.width(),
+                    zoomWindowHeight: height ? height : mainImage.height()
+                }));
+                this.isZoomActive = true;
+            }
+        },
+
+        /**
+         * Removes image zoom
+         */
+        removeZoom: function () {
+            if (!this.isZoomActive) {
+                return;
+            }
+
+            var image = this.selectors.mainImage;
+            $('.zoomContainer').remove();
+            image.removeData('elevateZoom');
+            image.removeData('zoomImage');
+            this.isZoomActive = false;
+        },
+
+        /**
+         * Removes generated gallery
+         */
+        removeGallery: function () {
+            this.$galleryHolderElement.empty();
+
+            this.isMobileSliderEnabled = false;
+            this.currentThumbIndex = 0;
+            this.noImageIndex = 'undefined';
+            this.isImageLoading = true;
+
+            this.removeZoom();
+        },
+
+        /**
+         * Generates gallery
+         */
+        initGallery: function (key) {
+            this.generateAndInitHtml(key);
+            this.initializeSelectors();
+
+            this.initMainImage();
+            this.initGalleryThumbs();
+            this.initSliderElements();
+
+            this.initZoomResize();
+        },
+        /**
+         * Initialization of desktop view
+         */
+        initDesktop: function (e) {
+            var self = e.data.self;
+            self.removeMobileSlider();
+        },
+
+        /**
+         * Initialization of mobile view
+         */
+        initMobile: function (e) {
+            var self = e.data.self;
+
+            self.removeZoom();
+            self.hideLoader();
+            self.addMobileSlider();
+        },
+
+        /**
+         * @param {string} galleryKey - a key of gallery view to generate new gallery
+         * @returns {object} data - an object with current gallery data
+         * */
+        getCurrentGalleryData: function (galleryKey) {
+            var data = {},
+                gallery = this.gallery[galleryKey];
+
+            if (typeof gallery.placeholder !== 'undefined') {
+                data.placeholder = {
+                    placeholderThumb: gallery.placeholder.thumb,
+                    placeholderLabel: gallery.placeholder.label
+                };
+            }
+
+            if (typeof gallery.images !== 'undefined') {
+                if (gallery.images.length > 1) {
+                    data.images = gallery.images;
                 }
+                data.baseImage = this.findBaseImage(gallery.images);
+            }
 
-                return data;
-            },
+            if (!this.params.isQuickView) {
+                data.videos = this.gallery.videos;
+            }
 
-            generateHtml: function (data) {
-                var template = $("#template").html(),
-                    content = tmpl(template, data);
-                $("#product-view-gallery").html(content);
-            },
+            return data;
+        },
 
-            /**
-             * Initialization of mobile view
-             *
-             * @param {string} galleryKey - a key of gallery view to generate new gallery
-             */
-            switchGalleryView: function (galleryKey) {
-                this.removeGallery();
-                this.sortImages(galleryKey);
+        generateAndInitHtml: function (data) {
+            var template = $(this.$templateId).html(),
+                content = tmpl(template, data);
+            this.$galleryHolderElement.html(content);
+        },
 
-                this.generateHtml(this.getCurrentGalleryData(galleryKey));
+        initializeSelectors: function () {
+            var rootEl = this.$galleryHolderElement;
+            this.selectors = {
+                mainImage: rootEl.find($('.' + this.params.baseParams.mainImageClass)),
+                loader: rootEl.find($('.' + this.params.baseParams.loaderClass)),
 
-                this.initGallery();
+                thumbContainerId: rootEl.find($('#' + this.params.baseParams.thumbContainerId)),
+                thumbElements: rootEl.find($('.' + this.params.baseParams.thumbElement)),
+                thumbLinks: rootEl.find($('.' + this.params.baseParams.thumbLinkClass)),
+                thumbImages: rootEl.find($('.' + this.params.baseParams.thumbImageClass)),
+                thumbLinkActive: rootEl.find($('.' + this.params.baseParams.thumbClassActive)),
 
-                if ($.mediaM && !this.isMobileSliderEnabled) {
-                    this.addMobileSlider();
+                mobileSliderId: rootEl.find($('#' + this.params.baseParams.mobileSliderId)),
+                mobileSliderImages: rootEl.find($('#' + this.params.baseParams.sliderImageClass))
+            };
+        },
+        /**
+         * Initialization of gallery
+         *
+         * @param {object} imagesData - json with data
+         * @param {string} containerSelector - container for gallery
+         * @param {object} [settings] - extra settings for gallery
+         */
+        init: function (imagesData, containerSelector, settings) {
+            var self = this;
+
+            this.gallery = imagesData;
+
+            this.params = $.extend(true, {}, this.defaults, settings);
+
+            this.currentGalleryKey = this.params.mainGallerySet;
+            this.$galleryHolderElement = $(containerSelector);
+
+            this.sortImages(self.params.mainGallerySet);
+
+            this.startingImage = this.findBaseImage(this.gallery[this.currentGalleryKey].images);
+            this.currentThumbIndex = this.startingImage.index;
+
+            this.initGallery(this.getCurrentGalleryData(this.currentGalleryKey));
+
+            $(window).on("mediaTD", {self: this}, this.initDesktop);
+            $(window).on("mediaM", {self: this}, this.initMobile);
+
+        },
+
+        /**
+         * Initialization of mobile view
+         *
+         * @param {string} galleryKey - a key of gallery view to generate new gallery
+         */
+        switchGalleryView: function (galleryKey) {
+            var e = {
+                data: {
+                    self: this
                 }
+            };
+            this.removeGallery();
+            this.sortImages(galleryKey);
+
+            this.initGallery(this.getCurrentGalleryData(galleryKey));
+
+            if ($.mediaM) {
+                this.initMobile(e);
+            } else {
+                this.initDesktop(e);
             }
         }
-    })
-    ();
-})
-(jQuery);
+    }
+})(jQuery);
