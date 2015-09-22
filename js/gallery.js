@@ -9,10 +9,12 @@ var ONEPICA = ONEPICA || {};
          * Main gallery params
          */
         defaults: {
-
+            /**
+             * Is Quick view enabled
+             */
             isQuickView: false,
 
-            mainGallerySet: 'gallery_error',
+            mainGallerySet: 'gallery_main',
             noImageUrl: "http://36.media.tumblr.com/d226f2dc0af8889dedb6ae010d796595/tumblr_nnkkezir8Z1topm99o1_1280.jpg",
 
             baseParams: {
@@ -28,11 +30,17 @@ var ONEPICA = ONEPICA || {};
                 mobileSliderId: 'mobileSlider',
                 resizeTimeout: 500
             },
+            /**
+             * Extensible zoom parameters
+             */
             zoomParams: {
                 cursor: 'crosshair',
                 borderSize: 0,
                 zoomWindowOffetx: 20
             },
+            /**
+             * Extensible Slider parameters
+             */
             sliderParams: {
                 pager: false,
                 preloadImages: 'all'
@@ -40,7 +48,7 @@ var ONEPICA = ONEPICA || {};
         },
 
         /**
-         * Main gallery params
+         * Main gallery parameters
          */
         params: {},
 
@@ -57,12 +65,7 @@ var ONEPICA = ONEPICA || {};
         /**
          * Gallery template element
          */
-        $templateId: '#template',
-
-        /**
-         * Gallery starting image
-         */
-        startingImage: 0,
+        templateId: 'template',
 
         /**
          * Indicates if zoom is active
@@ -70,7 +73,7 @@ var ONEPICA = ONEPICA || {};
         isZoomActive: false,
 
         /**
-         * Mobile gallery slider HTML element
+         * Mobile gallery slider holder element
          */
         mobileSliderHolder: '',
 
@@ -99,9 +102,9 @@ var ONEPICA = ONEPICA || {};
         currentThumbIndex: 0,
 
         /**
-         * Index of a broken url image
+         * Class name of an image with broken url
          */
-        noImageIndex: 'undefined',
+        noImage: 'js-no-image',
 
         /**
          * Gallery selectors
@@ -110,6 +113,8 @@ var ONEPICA = ONEPICA || {};
 
         /**
          * Sort Images array according to base image
+         *
+         * @param {string} key - a key of current gallery
          */
         sortImages: function (key) {
             var oldImages = this.gallery[key].images,
@@ -157,20 +162,20 @@ var ONEPICA = ONEPICA || {};
                 })
                 .on('error', function () {
                     el
-                        .attr('src', self.params.noImageUrl)
-                        .attr('data-zoom-image', self.params.noImageUrl);
+                        .addClass(self.noImage)
+                        .attr('src', self.params.noImageUrl);
                 });
             if (this.isImageLoading) {
                 this.showLoader();
             }
         },
+
         /**
          * Generates images thumbs from images object
          */
         initGalleryThumbs: function () {
             var self = this,
-                images = this.selectors.thumbImages,
-                links = this.selectors.thumbLinks;
+                images = this.selectors.thumbImages;
 
             images.each(function (index) {
                 $(this)
@@ -178,27 +183,63 @@ var ONEPICA = ONEPICA || {};
                         $(this).animate({
                             opacity: 1
                         });
-                        links.eq(index).on('click', function (e) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            if (index === self.currentThumbIndex) {
-                                return;
-                            }
-                            self.removeZoom();
-                            self.switchGalleryImage(index);
-                            self.addZoom();
-                        });
+                        self.initThumb(index);
                     })
                     .on('error', function () {
-                        $(this).attr('src', self.params.noImageUrl);
-                        links.eq(index)
-                            .attr('data-zoom-image', self.params.noImageUrl);
-                        self.noImageIndex = index;
+                        self.initThumbError($(this));
                     });
             });
             this.makeThumbActive();
         },
 
+        /**
+         * Initialize thumbs behaviour according to thumb index
+         *
+         * @param {number} index - an index of a thumb
+         */
+        initThumb: function (index) {
+            var self = this,
+                images = this.selectors.thumbImages,
+                links = this.selectors.thumbLinks,
+                mainImage = this.selectors.mainImage;
+
+            links.eq(index).on('click', function (e) {
+                var img = images.eq(index);
+
+                e.preventDefault();
+
+                if (index === self.currentThumbIndex) {
+                    return;
+                }
+
+                self.switchGalleryImage(index);
+
+                if (img.hasClass(self.noImage)) {
+                    self.removeZoom();
+                    return;
+                }
+
+                if (self.isZoomActive) {
+                    mainImage.data('elevateZoom').swaptheimage(img.attr('src'), img.attr('src'));
+                } else {
+                    self.addZoom();
+                }
+            });
+        },
+
+        /**
+         * Initialize Error thumbs behaviour according to thumb element
+         *
+         * @param {object} thumb - an error thumb
+         */
+        initThumbError: function (thumb) {
+            thumb.attr('src', this.params.noImageUrl)
+                .addClass(this.noImage);
+        },
+
+        /**
+         * Initialize mobile Slider elements
+         */
         initSliderElements: function () {
             var self = this,
                 sliderId = this.selectors.mobileSliderId;
@@ -229,6 +270,7 @@ var ONEPICA = ONEPICA || {};
 
                 self.removeZoom();
                 self.showLoader();
+
                 clearTimeout(self.zoomTimeout);
                 self.zoomTimeout = setTimeout(function () {
                     if (!self.isImageLoading) {
@@ -255,17 +297,18 @@ var ONEPICA = ONEPICA || {};
 
             this.isSliderLoading = true;
 
-            this.mobileSliderHolder = sliderId.bxSlider({
-                pager: self.params.sliderParams.pager,
+            this.mobileSliderHolder = sliderId.bxSlider($.extend({}, self.params.sliderParams, {
                 startSlide: self.currentThumbIndex,
+
                 onSlideAfter: function ($slideElement, oldIndex, newIndex) {
                     self.switchGalleryImage(newIndex);
                 },
+
                 onSliderLoad: function () {
                     self.isSliderLoading = false;
                     self.isMobileSliderEnabled = true;
                 }
-            });
+            }));
         },
 
         /**
@@ -285,13 +328,19 @@ var ONEPICA = ONEPICA || {};
          */
         switchGalleryImage: function (index) {
             var mainImage = this.selectors.mainImage,
-                newThumb = this.selectors.thumbLinks.eq(index),
-                newThumbImage = this.selectors.thumbImages.eq(index);
+                newThumbImage = this.selectors.thumbImages.eq(index),
+                noImg = this.noImage;
 
             this.currentThumbIndex = index;
-            mainImage.attr('data-zoom-image', newThumb.attr('data-zoom-image'));
-            mainImage.attr('src', newThumb.attr('data-zoom-image'));
+
+            mainImage.attr('src', newThumbImage.attr('src'));
             mainImage.attr('alt', newThumbImage.attr('alt'));
+
+            if (newThumbImage.hasClass(noImg) && !mainImage.hasClass(noImg)) {
+                mainImage.addClass(noImg);
+            } else if (mainImage.hasClass(noImg)){
+                mainImage.removeClass(noImg);
+            }
 
             this.makeThumbActive();
         },
@@ -301,6 +350,7 @@ var ONEPICA = ONEPICA || {};
          */
         makeThumbActive: function () {
             var activeClass = this.params.baseParams.thumbClassActive;
+
             this.selectors.thumbLinks
                 .removeClass(activeClass)
                 .eq(this.currentThumbIndex)
@@ -314,12 +364,13 @@ var ONEPICA = ONEPICA || {};
          * @param {string} [height] - height of image, to set zoom window height
          */
         addZoom: function (width, height) {
-            var self = this;
+            var self = this,
+                mainImage = this.selectors.mainImage;
+
             if ($.mediaM || this.params.isQuickView) {
                 return;
             }
-            var mainImage = this.selectors.mainImage;
-            if (!this.isZoomActive && this.currentThumbIndex !== this.noImageIndex) {
+            if (!this.isZoomActive && !mainImage.hasClass(this.noImage)) {
                 mainImage.elevateZoom($.extend({}, self.params.zoomParams, {
                     zoomWindowWidth: width ? width : mainImage.width(),
                     zoomWindowHeight: height ? height : mainImage.height()
@@ -332,10 +383,11 @@ var ONEPICA = ONEPICA || {};
          * Removes image zoom
          */
         removeZoom: function () {
+            var image = this.selectors.mainImage;
+
             if (!this.isZoomActive) {
                 return;
             }
-            var image = this.selectors.mainImage;
             $('.zoomContainer').remove();
             image.removeData('elevateZoom');
             image.removeData('zoomImage');
@@ -350,7 +402,6 @@ var ONEPICA = ONEPICA || {};
 
             this.isMobileSliderEnabled = false;
             this.currentThumbIndex = 0;
-            this.noImageIndex = 'undefined';
             this.isImageLoading = true;
 
             this.removeZoom();
@@ -358,12 +409,16 @@ var ONEPICA = ONEPICA || {};
 
         /**
          * Generates gallery
+         *
+         * @param {string} key -  a key of a gallery to initialize
          */
         initGallery: function (key) {
+            var data;
 
             this.sortImages(key);
 
-            this.generateAndInitHtml( this.getCurrentGalleryData(key));
+            data = this.getCurrentGalleryData(key);
+            this.generateAndInitHtml(data);
             this.initializeSelectors();
 
             this.initMainImage();
@@ -372,31 +427,39 @@ var ONEPICA = ONEPICA || {};
 
             this.initZoomResize();
         },
+
         /**
          * Initialization of desktop view
+         *
+         * @param {*} e - an event
          */
         initDesktop: function (e) {
             var self = e.data.self;
+
             self.removeMobileSlider();
         },
 
         /**
          * Initialization of mobile view
+         *
+         * @param {*} e - an event
          */
         initMobile: function (e) {
             var self = e.data.self;
-            self.removeZoom();
-            self.hideLoader();
+
             self.addMobileSlider();
         },
 
         /**
+         * Generates an object with Current gallery data
+         *
          * @param {string} galleryKey - a key of gallery view to generate new gallery
          * @returns {object} data - an object with current gallery data
-         * */
+         */
         getCurrentGalleryData: function (galleryKey) {
             var data = {},
                 gallery = this.gallery[galleryKey];
+
             if (typeof gallery.placeholder !== 'undefined') {
                 data.placeholder = {
                     placeholderThumb: gallery.placeholder.thumb,
@@ -415,12 +478,18 @@ var ONEPICA = ONEPICA || {};
             return data;
         },
 
+        /**
+         * Generates an HTML for a gallery
+         *
+         * @returns {object} data - an object with current gallery data
+         */
         generateAndInitHtml: function (data) {
-            var template = $(this.$templateId).html(),
-                content = tmpl(template, data);
-            this.$galleryHolderElement.html(content);
+            this.$galleryHolderElement.html(this.template(data));
         },
 
+        /**
+         * Initialization of selectors for gallery
+         */
         initializeSelectors: function () {
             var rootEl = this.$galleryHolderElement;
             this.selectors = {
@@ -437,8 +506,9 @@ var ONEPICA = ONEPICA || {};
                 mobileSliderImages: rootEl.find($('#' + this.params.baseParams.sliderImageClass))
             };
         },
+
         /**
-         * Initialization of gallery
+         * Initialization of a gallery
          *
          * @param {object} imagesData - json with data
          * @param {string} containerSelector - container for gallery
@@ -450,6 +520,8 @@ var ONEPICA = ONEPICA || {};
             this.params = $.extend(true, {}, this.defaults, settings);
             this.currentGalleryKey = this.params.mainGallerySet;
             this.$galleryHolderElement = $(containerSelector);
+
+            this.template = tmpl(this.templateId);
 
             this.initGallery(this.currentGalleryKey);
 

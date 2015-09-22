@@ -54,7 +54,7 @@
         <img class="js-main-image main-image"
              src="<%=baseImage.thumb%>"
              alt="<%=baseImage.label%>"
-             data-zoom-image="<%=baseImage.thumb%>" />
+             />
         <div class="loader-placeholder js-loader"></div>
     </div>
 
@@ -72,8 +72,7 @@
         <% for ( var i = 0; i < images.length; i++ ) { %>
         <li class="product-image-thumb js-product-image-thumb">
             <a class="js-thumb-link product-view-image-thumb product-view-image-link"
-               href="#"
-               data-zoom-image="<%=images[i].thumb%>">
+               href="#">
                 <img class="js-thumb-image" src="<%=images[i].thumb%>" alt="<%=images[i].label%>" />
             </a>
         </li>

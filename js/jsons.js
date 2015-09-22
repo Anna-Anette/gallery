@@ -64,7 +64,7 @@ var galleryData = {
     gallery_error: {
         images: [
             {
-                isBase: false,
+                isBase: true,
                 label: "image #0",
                 thumb: "http://iqlab.ua/test/gallery/thumb0_000.png"
             },
@@ -79,9 +79,14 @@ var galleryData = {
                 thumb: "http://iqlab.ua/test/gallery/thumb2.png"
             },
             {
-                isBase: true,
+                isBase: false,
                 label: "image #3",
                 thumb: "http://iqlab.ua/test/gallery/thumb3.png"
+            },
+            {
+                isBase: false,
+                label: "image #3",
+                thumb: "http://iqlab.ua/test/gallery/thumb3111111111111.png"
             }
         ]
     },
