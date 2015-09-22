@@ -419,7 +419,7 @@ var ONEPICA = ONEPICA || {};
             this.sortImages(key);
 
             data = this.getCurrentGalleryData(key);
-            this.generateAndInitHtml(data);
+            this.generateHtml(data);
             this.initializeSelectors();
 
             this.initMainImage();
@@ -482,7 +482,7 @@ var ONEPICA = ONEPICA || {};
         /**
          * Generates an HTML for a gallery
          */
-        generateAndInitHtml: function (data) {
+        generateHtml: function (data) {
             this.$galleryHolderElement.html(this.template(data));
         },
 
