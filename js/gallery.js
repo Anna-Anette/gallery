@@ -233,7 +233,8 @@ var ONEPICA = ONEPICA || {};
          * @param {object} thumb - an error thumb
          */
         initThumbError: function (thumb) {
-            thumb.attr('src', this.params.noImageUrl)
+            thumb
+                .attr('src', this.params.noImageUrl)
                 .addClass(this.noImage);
         },
 
@@ -480,8 +481,6 @@ var ONEPICA = ONEPICA || {};
 
         /**
          * Generates an HTML for a gallery
-         *
-         * @returns {object} data - an object with current gallery data
          */
         generateAndInitHtml: function (data) {
             this.$galleryHolderElement.html(this.template(data));
