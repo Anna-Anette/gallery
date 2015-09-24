@@ -337,12 +337,10 @@ var ONEPICA = ONEPICA || {};
             mainImage.attr('src', newThumbImage.attr('src'));
             mainImage.attr('alt', newThumbImage.attr('alt'));
 
+            mainImage.removeClass(noImg);
+
             if (newThumbImage.hasClass(noImg)) {
-                if(!mainImage.hasClass(noImg)) {
-                    mainImage.addClass(noImg);
-                }
-            } else if (mainImage.hasClass(noImg)) {
-                mainImage.removeClass(noImg);
+                mainImage.addClass(noImg);
             }
 
             this.makeThumbActive();

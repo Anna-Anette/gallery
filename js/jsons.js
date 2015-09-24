@@ -80,6 +80,11 @@ var galleryData = {
             },
             {
                 isBase: false,
+                label: "image #0",
+                thumb: "http://iqlab.ua/test/gallery/thumb0_000.png"
+            },
+            {
+                isBase: false,
                 label: "image #3",
                 thumb: "http://iqlab.ua/test/gallery/thumb3.png"
             },

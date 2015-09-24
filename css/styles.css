@@ -494,3 +494,5 @@ img { max-width: 100%; display: block; }
 @media only screen and (-webkit-min-device-pixel-ratio: 1.25), only screen and (min-resolution: 120dpi) { .product-video-link:after { background-size: 198px 115px; background-image: url("../images/sprites/global2x.png"); } }
 
 /* EO Product View - Gallery */
+.square-table { border-collapse: separate; border-spacing: 10px; margin: 0 auto; width: 100%; }
+.square-table td { border: 2px solid #3471ff; user-select: none; width: 20px; height: 40px; vertical-align: middle; text-align: center; }
