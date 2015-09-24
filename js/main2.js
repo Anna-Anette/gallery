@@ -86,8 +86,9 @@ squares.square = {
     },
 
     /**
-     * Creates an array holder for squares elements
-     * @returns {array} holder - an array with squares data
+     * Creates an object holder for squares elements
+     *
+     * @returns {object} holder - an object with squares data
      */
     generateTetraHolder: function () {
         var elements = this.tetragonsArray,
