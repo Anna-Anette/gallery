@@ -9,6 +9,7 @@ squares.square = {
      */
     tetraWrapper: 'tetraWrapper',
     tetragons: document.getElementsByClassName('mini-square'),
+    tetragonsClassName: 'mini-square',
 
     /**
      * Array holders for elements
@@ -69,7 +70,8 @@ squares.square = {
      * Generates HTML elements basing on settings
      */
     generateTetras: function () {
-        var container = this.tetraWrapper,
+        var fragment = document.createDocumentFragment(),
+            container = this.tetraWrapper,
             rowsNum = this.rangeSettings.rowsNum,
             cellsNum = this.rangeSettings.cellsInRowNum;
 
@@ -77,12 +79,13 @@ squares.square = {
             var tr = document.createElement('tr');
             for (var k = 0; k < cellsNum; k++) {
                 var td = document.createElement('td');
-                td.setAttribute('class', 'mini-square');
+                td.setAttribute('class', this.tetragonsClassName);
 
                 tr.appendChild(td);
             }
-            container.appendChild(tr);
+            fragment.appendChild(tr);
         }
+        container.appendChild(fragment);
     },
 
     /**
@@ -91,7 +94,8 @@ squares.square = {
      * @returns {object} holder - an object with squares data
      */
     generateTetraHolder: function () {
-        var elements = this.tetragonsArray,
+        var self = this,
+            elements = this.tetragonsArray,
             holder = [];
 
         elements.forEach(function (el, index) {
@@ -100,7 +104,9 @@ squares.square = {
             holder.push({
                 elem: el,
                 index: index,
-                clicked: 0
+                clicked: 0,
+                color: self.colors.defColor,
+                isClicked: false
             })
         });
         return holder;
@@ -116,6 +122,7 @@ squares.square = {
         element.addEventListener('click', function (e) {
             var tetraIndex = e.target.getAttribute('data-index');
             self.paintedTetragonsArray[tetraIndex].clicked += 1;
+            self.paintedTetragonsArray[tetraIndex].isClicked = true;
         });
     },
 
@@ -158,25 +165,45 @@ squares.square = {
             elements = this.tetragonsArray;
 
         button[0].addEventListener('click', function () {
-            elements.forEach(function (el, ind) {
-                    self.indicateTetragonColor(ind);
+            elements.forEach(function (el, index) {
+                    if (self.paintedTetragonsArray[index].isClicked) {
+                        self.indicateTetragonColor(index);
+                    }
                 }
-            )
+            );
+            self.resetClicks();
         });
     },
 
+    /**
+     * Resets isClicked value to false, to indicate if click was made
+     */
+    resetClicks: function () {
+        var self = this,
+            elements = this.tetragonsArray;
+
+        elements.forEach(function (el, index) {
+                self.paintedTetragonsArray[index].isClicked = false;
+            }
+        )
+    },
     /**
      * Reset results for each square, by clicking on a button "Reset"
      */
     resetResults: function () {
         var self = this,
             button = this.buttons.reset,
-            els = this.tetragonsArray;
+            elements = this.tetragonsArray;
 
         button[0].addEventListener('click', function () {
-            els.forEach(function (el, index) {
+            elements.forEach(function (el, index) {
                     self.paintedTetragonsArray[index].clicked = 0;
-                    self.fillTetragonWithTextAndColor(index, self.colors.defColor, '');
+                    self.paintedTetragonsArray[index].isClicked = false;
+
+                    if (self.paintedTetragonsArray[index].color.toUpperCase() !== self.colors.defColor.toUpperCase()) {
+                        self.paintedTetragonsArray[index].color = self.colors.defColor;
+                    }
+                    self.fillTetragonWithTextAndColor(index, '');
                 }
             )
         });
@@ -186,13 +213,12 @@ squares.square = {
      * Adds  a color and a number for each square
      *
      * @param {number} index - an index of current element
-     * @param {string} color -  a color to fill the square
      * @param {string/number} [num] - a number of clicks or empty string for reset
      */
-    fillTetragonWithTextAndColor: function (index, color, num) {
+    fillTetragonWithTextAndColor: function (index, num) {
         var elementData = this.paintedTetragonsArray[index];
 
-        elementData.elem.style.backgroundColor = color;
+        elementData.elem.style.backgroundColor = elementData.color;
         elementData.elem.innerHTML = (num === '') ? num : elementData.clicked;
     },
 
@@ -202,7 +228,8 @@ squares.square = {
      * @param {number} index -  an index of a square element
      */
     indicateTetragonColor: function (index) {
-        var clicked = this.paintedTetragonsArray[index].clicked,
+        var element = this.paintedTetragonsArray[index],
+            clicked = element.clicked,
             color;
 
         switch (true) {
@@ -223,6 +250,7 @@ squares.square = {
                 break;
         }
 
-        this.fillTetragonWithTextAndColor(index, color);
+        element.color = color;
+        this.fillTetragonWithTextAndColor(index);
     }
 };
