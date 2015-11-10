@@ -1,5 +1,10 @@
 # Created by .ignore support plugin (hsz.mobi)
 /.sass-cache
 /.idea
+/images
+/js/bxSlider
+/js/fancybox
+/js/jquery.elevateZoom.min.js
+/js/singleton.js
 
 node_modules
