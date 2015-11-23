@@ -116,14 +116,17 @@ squares.square = {
      * Listens for clicks on square elements
      */
     listenTetrasClick: function () {
-        var self = this,
-            element = this.tetraWrapper;
+        var self = this;
 
-        element.addEventListener('click', function (e) {
-            var tetraIndex = e.target.getAttribute('data-index');
-            self.paintedTetragonsArray[tetraIndex].clicked += 1;
-            self.paintedTetragonsArray[tetraIndex].isClicked = true;
-        });
+        this.tetraWrapper.addEventListener('click', function (e) {
+            for (var target = e.target; target && target != this; target = target.parentNode) {
+                if (target.matches('td')) {
+                    self.paintedTetragonsArray[e.target.getAttribute('data-index')].clicked += 1;
+                    self.paintedTetragonsArray[e.target.getAttribute('data-index')].isClicked = true;
+                    break;
+                }
+            }
+        }, false);
     },
 
     /**
@@ -179,10 +182,9 @@ squares.square = {
      * Resets isClicked value to false, to indicate if click was made
      */
     resetClicks: function () {
-        var self = this,
-            elements = this.tetragonsArray;
+        var self = this;
 
-        elements.forEach(function (el, index) {
+        this.tetragonsArray.forEach(function (el, index) {
                 self.paintedTetragonsArray[index].isClicked = false;
             }
         )

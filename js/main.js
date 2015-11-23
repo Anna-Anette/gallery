@@ -80,6 +80,8 @@ jQuery.noConflict()(function ($) {
         }
     }
 
+
+
     generateSwatches(galleryData);
 
     ONEPICA.Gallery.init(galleryData, "#product-view-gallery", {
