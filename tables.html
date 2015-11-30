@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Notebook</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div class="main row">
+    <div class="col-lg-6 col-lg-offset-1">
+        <h3>Notes list</h3>
+        <ul class="list-group list-of-notes">
+            <li class="note">
+            </li>
+        </ul>
+        <table class="table table-bordered table-hover" id="rowTable">
+            <thead>
+            <tr>
+                <td>id</td>
+                <td>Name</td>
+                <td>Qty</td>
+                <td>Availability</td>
+                <td>Edit</td>
+            </tr>
+            </thead>
+            <tbody id="rowTableBody"></tbody>
+        </table>
+        <div class="btn-group">
+            <button class="btn btn-default" id="showAddRowForm"> Add new row</button>
+            <button class="btn btn-danger" id="deleteRowBtn">Delete row</button>
+            <button class="btn btn-success" id="demoData">Demo data</button>
+            <button class="btn btn-primary" id="clearTable">Clear table</button>
+        </div>
+        <div class="add-row-form" id="addRowContainer">
+            <h3>
+                Add new row
+            </h3>
+
+            <form name="addRowForm" id="addRowForm">
+                <ul class="list-group">
+                    <li class="list-group-item">
+                        <h3><label for="name" class="control-label">Name</label></h3>
+                        <input type="text" id="name" class="form-control title" />
+                    </li>
+                    <li class="list-group-item">
+                        <h4><label for="qtySelect">Qty</label></h4>
+                        <select name="qty-select" id="qtySelect" class="form-control">
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                        </select>
+                    </li>
+                    <li class="list-group-item">
+                        <input type="checkbox" id="available" class="checkbox-inline" />
+                        <label for="available" class="label label-default">Availability</label>
+                    </li>
+                </ul>
+                <button class="btn-primary btn" id="addNewRowBtn">Add row</button>
+            </form>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+</script>
+<script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/table-editor.js"></script>
+
+</body>
+</html>

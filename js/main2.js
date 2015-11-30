@@ -73,12 +73,16 @@ squares.square = {
         var fragment = document.createDocumentFragment(),
             container = this.tetraWrapper,
             rowsNum = this.rangeSettings.rowsNum,
-            cellsNum = this.rangeSettings.cellsInRowNum;
+            cellsNum = this.rangeSettings.cellsInRowNum,
+            tr,
+            td,
+            k,
+            i = 0;
 
-        for (var i = 0; i < rowsNum; i++) {
-            var tr = document.createElement('tr');
-            for (var k = 0; k < cellsNum; k++) {
-                var td = document.createElement('td');
+        for ( ; i < rowsNum; i++) {
+           tr = document.createElement('tr');
+            for (k = 0; k < cellsNum; k++) {
+                td = document.createElement('td');
                 td.setAttribute('class', this.tetragonsClassName);
 
                 tr.appendChild(td);
@@ -95,20 +99,17 @@ squares.square = {
      */
     generateTetraHolder: function () {
         var self = this,
-            elements = this.tetragonsArray,
             holder = [];
-
-        elements.forEach(function (el, index) {
-            el.setAttribute('data-index', index);
-
+        Object.keys(this.tetragonsArray).forEach(function(index) {
+            this[index].setAttribute('data-index', index);
             holder.push({
-                elem: el,
+                elem: this[index],
                 index: index,
                 clicked: 0,
                 color: self.colors.defColor,
                 isClicked: false
-            })
-        });
+            });
+        }, this.tetragonsArray);
         return holder;
     },
 
@@ -116,10 +117,11 @@ squares.square = {
      * Listens for clicks on square elements
      */
     listenTetrasClick: function () {
-        var self = this;
+        var target,
+            self = this;
 
         this.tetraWrapper.addEventListener('click', function (e) {
-            for (var target = e.target; target && target != this; target = target.parentNode) {
+            for (target = e.target; target && target != this; target = target.parentNode) {
                 if (target.matches('td')) {
                     self.paintedTetragonsArray[e.target.getAttribute('data-index')].clicked += 1;
                     self.paintedTetragonsArray[e.target.getAttribute('data-index')].isClicked = true;
@@ -135,12 +137,14 @@ squares.square = {
     generateRandomClicks: function () {
         var self = this,
             button = this.buttons.generate,
-            elements = this.tetragonsArray;
+            elements = this.tetragonsArray,
+            i,
+            range;
 
         button[0].addEventListener('click', function () {
             elements.forEach(function (el) {
-                    var range = self.getRandomClicksNumber(self.rangeSettings.from, self.rangeSettings.to);
-                    for (var i = 0; i <= range; i++) {
+                   range = self.getRandomClicksNumber(self.rangeSettings.from, self.rangeSettings.to);
+                    for (i = 0; i <= range; i++) {
                         el.click();
                     }
                 }
@@ -187,7 +191,7 @@ squares.square = {
         this.tetragonsArray.forEach(function (el, index) {
                 self.paintedTetragonsArray[index].isClicked = false;
             }
-        )
+        );
     },
     /**
      * Reset results for each square, by clicking on a button "Reset"
@@ -207,7 +211,7 @@ squares.square = {
                     }
                     self.fillTetragonWithTextAndColor(index, '');
                 }
-            )
+            );
         });
     },
 

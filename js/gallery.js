@@ -123,7 +123,7 @@ var ONEPICA = ONEPICA || {};
             if (typeof oldImages === 'undefined') {
                 return;
             }
-            for (var i = 0; i < oldImages.length; i++) {
+            for (var i = 0, k = oldImages.length; i < k; i++) {
                 if (oldImages[i].isBase) {
                     newImages.unshift(oldImages[i]);
                 } else {
@@ -174,10 +174,9 @@ var ONEPICA = ONEPICA || {};
          * Generates images thumbs from images object
          */
         initGalleryThumbs: function () {
-            var self = this,
-                images = this.selectors.thumbImages;
+            var self = this;
 
-            images.each(function (index) {
+            this.selectors.thumbImages.each(function (index) {
                 $(this)
                     .on('load', function () {
                         $(this).animate({
@@ -200,10 +199,9 @@ var ONEPICA = ONEPICA || {};
         initThumb: function (index) {
             var self = this,
                 images = this.selectors.thumbImages,
-                links = this.selectors.thumbLinks,
                 mainImage = this.selectors.mainImage;
 
-            links.eq(index).on('click', function (e) {
+            this.selectors.thumbLinks.eq(index).on('click', function (e) {
                 var img = images.eq(index);
 
                 e.preventDefault();
@@ -242,10 +240,9 @@ var ONEPICA = ONEPICA || {};
          * Initialize mobile Slider elements
          */
         initSliderElements: function () {
-            var self = this,
-                sliderId = this.selectors.mobileSliderId;
+            var self = this;
 
-            sliderId.find('img').each(function () {
+            this.selectors.mobileSliderId.find('img').each(function () {
                 $(this)
                     .on('error', function () {
                         $(this)
@@ -293,13 +290,12 @@ var ONEPICA = ONEPICA || {};
                 return;
             }
 
-            var self = this,
-                sliderId = this.selectors.mobileSliderId;
+            var self = this;
 
             this.isSliderLoading = true;
 
-            this.mobileSliderHolder = sliderId.bxSlider($.extend({}, self.params.sliderParams, {
-                startSlide: self.currentThumbIndex,
+            this.mobileSliderHolder = this.selectors.mobileSliderId.bxSlider($.extend({}, this.params.sliderParams, {
+                startSlide: this.currentThumbIndex,
 
                 onSlideAfter: function ($slideElement, oldIndex, newIndex) {
                     self.switchGalleryImage(newIndex);
@@ -329,18 +325,17 @@ var ONEPICA = ONEPICA || {};
          */
         switchGalleryImage: function (index) {
             var mainImage = this.selectors.mainImage,
-                newThumbImage = this.selectors.thumbImages.eq(index),
-                noImg = this.noImage;
+                newThumbImage = this.selectors.thumbImages.eq(index);
 
             this.currentThumbIndex = index;
 
             mainImage.attr('src', newThumbImage.attr('src'));
             mainImage.attr('alt', newThumbImage.attr('alt'));
 
-            mainImage.removeClass(noImg);
+            mainImage.removeClass(this.noImage);
 
-            if (newThumbImage.hasClass(noImg)) {
-                mainImage.addClass(noImg);
+            if (newThumbImage.hasClass(this.noImage)) {
+                mainImage.addClass(this.noImage);
             }
 
             this.makeThumbActive();
@@ -350,12 +345,10 @@ var ONEPICA = ONEPICA || {};
          * Makes gallery thumb active basing on index of a new image, emulates zoom functionality of image switch
          */
         makeThumbActive: function () {
-            var activeClass = this.params.baseParams.thumbClassActive;
-
             this.selectors.thumbLinks
-                .removeClass(activeClass)
+                .removeClass(this.params.baseParams.thumbClassActive)
                 .eq(this.currentThumbIndex)
-                .addClass(activeClass);
+                .addClass(this.params.baseParams.thumbClassActive);
         },
 
         /**
@@ -414,12 +407,10 @@ var ONEPICA = ONEPICA || {};
          * @param {string} key -  a key of a gallery to initialize
          */
         initGallery: function (key) {
-            var data;
 
             this.sortImages(key);
 
-            data = this.getCurrentGalleryData(key);
-            this.generateHtml(data);
+            this.generateHtml(this.getCurrentGalleryData(key));
             this.initializeSelectors();
 
             this.initMainImage();
@@ -435,9 +426,7 @@ var ONEPICA = ONEPICA || {};
          * @param {*} e - an event
          */
         initDesktop: function (e) {
-            var self = e.data.self;
-
-            self.removeMobileSlider();
+            e.data.self.removeMobileSlider();
         },
 
         /**
@@ -446,9 +435,7 @@ var ONEPICA = ONEPICA || {};
          * @param {*} e - an event
          */
         initMobile: function (e) {
-            var self = e.data.self;
-
-            self.addMobileSlider();
+            e.data.self.addMobileSlider();
         },
 
         /**
