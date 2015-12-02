@@ -13,6 +13,7 @@
 
         this.sortByNameBtn = data.sortBtns.sortByNameBtn;
         this.sortByIdBtn = data.sortBtns.sortByIdBtn;
+        this.sortByQtyBtn = data.sortBtns.sortByQtyBtn;
 
         this.addRowContainer = data.addRowContainer;
         this.addRowForm = data.addRowForm;
@@ -89,7 +90,7 @@
 
                 for (k = 0; k <= cellsNum; k++) {
                     td = document.createElement('td');
-                    td.innerHTML = (k === 0) ? rowsCount += 1 : rowData[k];
+                    td.innerHTML = (rowData[k] === '' && k === 0) ? rowsCount += 1 : rowData[k];
 
                     if (k === cellsNum) {
                         td.innerHTML = '';
@@ -97,9 +98,7 @@
                     }
 
                     tr.appendChild(td);
-
                 }
-                // tr.setAttribute('data-index', rowsCount + '');
                 fragment.appendChild(tr);
             }
 
@@ -128,13 +127,12 @@
             });
         },
 
-
         /**
          * Adds new row from the form data
          */
         getRowDataFormTheForm: function () {
             return [
-                this.rowsCount,
+                '',
                 document.getElementById('name').value,
                 document.getElementById('qtySelect').value,
                 document.getElementById('available').checked ? 'yes' : 'no'
@@ -232,47 +230,79 @@
          */
         exportTableDataHandler: function () {
             var self = this;
+
             this.importDataHolder.value = '';
 
             this.exportDataBtn.addEventListener('click', function (e) {
                 e.preventDefault();
                 self.exportTableData();
-                self.showTableData();
+                self.showExportedTableData();
             });
         },
 
-        sortByNameHandler: function () {
+        showExportedTableData: function () {
+            var data = this.exportTableData();
+            this.importDataHolder.value = JSON.stringify(data);
+        },
+
+        sortByHandler: function () {
             var self = this;
 
             this.sortByNameBtn.addEventListener('click', function (e) {
                 e.preventDefault();
-                self.sortByName();
+                self.sortByType('name');
+            });
+
+            this.sortByIdBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                self.sortByType('id');
+            });
+
+            this.sortByQtyBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                self.sortByType('qty');
             });
         },
 
-        sortByName: function () {
+        sortByType: function (type) {
 
             var self = this,
                 holder = [],
                 data = this.exportTableData(),
-                rows = this.tableBody.children;
-
+                rowsCount = this.rowsCount,
+                rows = this.tableBody.children,
+                callback;
 
             for (var i = 0; i < rows.length; i++) {
                 holder.push(data[i]);
             }
 
-            holder.sort(function (a, b) {
-                if (a[1].toLowerCase() > b[1].toLowerCase()) {
-                    return 1;
-                }
-                if (a[1].toLowerCase() < b[1].toLowerCase()) {
-                    return -1;
-                }
-                return 0;
-            });
+            if (type === 'name') {
+               callback = function (a, b) {
+                   if (a[1].toLowerCase() > b[1].toLowerCase()) {
+                       return 1;
+                   }
+                   if (a[1].toLowerCase() < b[1].toLowerCase()) {
+                       return -1;
+                   }
+                   return 0;
+               };
+            } else if (type === 'id') {
+                callback = function(a, b) {
+                    return a[0] - b[0];
+                };
+            } else if (type === 'qty') {
+                callback = function(a, b) {
+                    return a[2] - b[2];
+                };
+            }
+
+            holder.sort(callback);
 
             this.clearTable();
+
+            this.rowsCount = rowsCount;
+
             holder.forEach(function (el) {
                 self.addRow(el);
             });
@@ -281,6 +311,8 @@
 
         /**
          * Exports Table data to text area
+         *
+         * @returns {Object} holder  - an object with exported data
          */
         exportTableData: function () {
             var holder = {},
@@ -303,10 +335,6 @@
             return holder;
         },
 
-        showTableData: function () {
-            var data = this.exportTableData();
-            this.importDataHolder.value = JSON.stringify(data);
-        },
 
         /**
          * Initialize handlers
@@ -321,7 +349,7 @@
             this.importTableDataHandler();
 
             if (!this.isSortedByName) {
-                this.sortByNameHandler();
+                this.sortByHandler();
             }
         }
     };
@@ -338,7 +366,8 @@
         },
         sortBtns: {
             sortByNameBtn: document.getElementById('sortByName'),
-            sortByIdBtn: document.getElementById('sortById')
+            sortByIdBtn: document.getElementById('sortById'),
+            sortByQtyBtn: document.getElementById('sortByQty')
         },
         addRowContainer: document.getElementById('addRowContainer'),
         addRowForm: document.getElementById('addRowForm'),
