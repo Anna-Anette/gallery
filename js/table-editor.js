@@ -1,22 +1,32 @@
 (function (global) {
-
+    'use strict';
     function TableEditor(data) {
         this.data = data;
 
         this.showAddRowBtn = data.buttons.showAddRowBtn;
         this.addRowBtn = data.buttons.addRowBtn;
         this.randomDataBtn = data.buttons.randomDataBtn;
-        this.clearTableBtn = data.buttons.clearTableBtn;
+        this.clearDataBtn = data.buttons.clearDataBtn;
+        this.exportDataBtn = data.buttons.exportDataBtn;
+        this.importDataBtn = data.buttons.importDataBtn;
         this.deleteRowBtn = data.buttons.deleteRowBtn;
+
+        this.sortByNameBtn = data.sortBtns.sortByNameBtn;
+        this.sortByIdBtn = data.sortBtns.sortByIdBtn;
 
         this.addRowContainer = data.addRowContainer;
         this.addRowForm = data.addRowForm;
 
         this.tableBody = data.tableBody;
 
+        this.importDataHolder = data.importDataHolder;
+
         this.randomData = data.randomData;
         this.rowsCount = this.tableBody.children.length;
         this.rowInfo = data.rowInfo;
+        this.numCells = data.rowInfo.numCells;
+
+        this.isSortedByName = false;
     }
 
     TableEditor.prototype = {
@@ -26,6 +36,7 @@
          */
         toggleFormHandler: function () {
             var self = this;
+
             this.showAddRowBtn.addEventListener('click', function (e) {
                 e.preventDefault();
                 self.toggleForm();
@@ -35,12 +46,10 @@
          * Shows/hides "Add row" form
          */
         toggleForm: function () {
-            var addRowContainer = this.addRowContainer;
-
-            if (addRowContainer.style.display !== 'block') {
-                addRowContainer.style.display = 'block';
+            if (this.addRowContainer.style.display !== 'block') {
+                this.addRowContainer.style.display = 'block';
             } else {
-                addRowContainer.style.display = 'none';
+                this.addRowContainer.style.display = 'none';
             }
         },
 
@@ -48,10 +57,9 @@
          * A handler for "Add row" form
          */
         addNewRowHandler: function () {
-            var self = this,
-                btn = this.addRowBtn;
+            var self = this;
 
-            btn.addEventListener('click', function (e) {
+            this.addRowBtn.addEventListener('click', function (e) {
                 e.preventDefault();
                 self.addRow(self.getRowDataFormTheForm());
             });
@@ -64,9 +72,7 @@
          *
          */
         addRow: function (rowData, rows) {
-            var
-                fragment = document.createDocumentFragment(),
-                container = this.tableBody,
+            var fragment = document.createDocumentFragment(),
                 rowsNum = rows ? +rows : 1,
                 cellsNum = this.rowInfo.numCells,
                 rowsCount = this.rowsCount,
@@ -77,30 +83,34 @@
                 k;
 
             tdInput.type = 'checkbox';
+
             for (; i < rowsNum; i++) {
                 tr = document.createElement('tr');
 
                 for (k = 0; k <= cellsNum; k++) {
                     td = document.createElement('td');
                     td.innerHTML = (k === 0) ? rowsCount += 1 : rowData[k];
-                    tr.appendChild(td);
+
                     if (k === cellsNum) {
                         td.innerHTML = '';
                         td.appendChild(tdInput);
                     }
+
+                    tr.appendChild(td);
+
                 }
-                tr.setAttribute('data-index', rowsCount + '');
+                // tr.setAttribute('data-index', rowsCount + '');
                 fragment.appendChild(tr);
             }
+
             this.rowsCount = rowsCount;
-            container.appendChild(fragment);
+            this.tableBody.appendChild(fragment);
         },
 
         deleteRowHandler: function () {
-            var self = this,
-                btn = this.deleteRowBtn;
+            var self = this;
 
-            btn.addEventListener('click', function (e) {
+            this.deleteRowBtn.addEventListener('click', function (e) {
                 e.preventDefault();
                 self.deleteRows();
             });
@@ -108,11 +118,11 @@
 
         deleteRows: function () {
             var self = this,
-                tableBody = self.tableBody.children,
+                tableBody = this.tableBody.children,
                 rows = Array.prototype.slice.call(tableBody);
 
             rows.forEach(function (row) {
-                if (row.childNodes[row.children.length - 1].childNodes[0].checked) {
+                if (row.lastChild.childNodes[0].checked) {
                     self.tableBody.removeChild(row);
                 }
             });
@@ -135,10 +145,9 @@
          * A handler to generate random data
          */
         addRandomDataHandler: function () {
-            var self = this,
-                btn = this.randomDataBtn;
+            var self = this;
 
-            btn.addEventListener('click', function (e) {
+            this.randomDataBtn.addEventListener('click', function (e) {
                 e.preventDefault();
                 self.addRandomData();
             });
@@ -156,11 +165,13 @@
                 generateRandomName = function () {
                     var text = "",
                         i = 0,
-                        wordLength = 5,
+                        wordLength = 7,
+                    //possible = "ABCDEF";
                         possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-                    for (; i < wordLength; i++)
+                    for (; i < wordLength; i++) {
                         text += possible.charAt(Math.floor(Math.random() * possible.length));
+                    }
                     return text;
                 };
 
@@ -182,10 +193,9 @@
          * Handles event for table data clear
          */
         clearTableHandler: function () {
-            var self = this,
-                btn = this.clearTableBtn;
+            var self = this;
 
-            btn.addEventListener('click', function (e) {
+            this.clearDataBtn.addEventListener('click', function (e) {
                 e.preventDefault();
                 self.clearTable();
             });
@@ -195,12 +205,107 @@
          * Clears table data
          */
         clearTable: function () {
-            var tableBody = this.tableBody;
-
-            while (tableBody.firstChild) {
-                tableBody.removeChild(tableBody.firstChild);
+            while (this.tableBody.firstChild) {
+                this.tableBody.removeChild(this.tableBody.firstChild);
             }
             this.rowsCount = 0;
+            this.isSortedByName = false;
+        },
+
+        /**
+         * Imports Table data from the text area
+         */
+        importTableDataHandler: function () {
+            var self = this,
+                tableData;
+
+            this.importDataBtn.addEventListener('click', function () {
+                tableData = self.importDataHolder.value ? JSON.parse(self.importDataHolder.value) : '';
+                Object.keys(tableData).map(function (val, index) {
+                    self.addRow(tableData[index]);
+                });
+            });
+        },
+
+        /**
+         * Export Table data handler
+         */
+        exportTableDataHandler: function () {
+            var self = this;
+            this.importDataHolder.value = '';
+
+            this.exportDataBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                self.exportTableData();
+                self.showTableData();
+            });
+        },
+
+        sortByNameHandler: function () {
+            var self = this;
+
+            this.sortByNameBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                self.sortByName();
+            });
+        },
+
+        sortByName: function () {
+
+            var self = this,
+                holder = [],
+                data = this.exportTableData(),
+                rows = this.tableBody.children;
+
+
+            for (var i = 0; i < rows.length; i++) {
+                holder.push(data[i]);
+            }
+
+            holder.sort(function (a, b) {
+                if (a[1].toLowerCase() > b[1].toLowerCase()) {
+                    return 1;
+                }
+                if (a[1].toLowerCase() < b[1].toLowerCase()) {
+                    return -1;
+                }
+                return 0;
+            });
+
+            this.clearTable();
+            holder.forEach(function (el) {
+                self.addRow(el);
+            });
+            this.isSortedByName = true;
+        },
+
+        /**
+         * Exports Table data to text area
+         */
+        exportTableData: function () {
+            var holder = {},
+                holderItem = [],
+                rows = this.tableBody.children,
+                i = 0,
+                rowsLength = rows.length,
+                l,
+                cellsLength,
+                rowsData;
+
+            for (; i < rowsLength; i++) {
+                rowsData = rows[i].children;
+                for (l = 0, cellsLength = rowsData.length; l < cellsLength - 1; l++) {
+                    holderItem.push(rowsData[l].innerHTML);
+                }
+                holder[i] = holderItem;
+                holderItem = [];
+            }
+            return holder;
+        },
+
+        showTableData: function () {
+            var data = this.exportTableData();
+            this.importDataHolder.value = JSON.stringify(data);
         },
 
         /**
@@ -212,6 +317,12 @@
             this.addNewRowHandler();
             this.clearTableHandler();
             this.deleteRowHandler();
+            this.exportTableDataHandler();
+            this.importTableDataHandler();
+
+            if (!this.isSortedByName) {
+                this.sortByNameHandler();
+            }
         }
     };
 
@@ -221,44 +332,24 @@
             deleteRowBtn: document.getElementById('deleteRowBtn'),
             addRowBtn: document.getElementById('addNewRowBtn'),
             randomDataBtn: document.getElementById('demoData'),
-            clearTableBtn: document.getElementById('clearTable')
+            exportDataBtn: document.getElementById('exportTable'),
+            importDataBtn: document.getElementById('importDataBtn'),
+            clearDataBtn: document.getElementById('clearTable')
+        },
+        sortBtns: {
+            sortByNameBtn: document.getElementById('sortByName'),
+            sortByIdBtn: document.getElementById('sortById')
         },
         addRowContainer: document.getElementById('addRowContainer'),
         addRowForm: document.getElementById('addRowForm'),
         tableBody: document.getElementById('rowTableBody'),
+        importDataHolder: document.getElementById('importData'),
         rowInfo: {
             numCells: 4
-        },
-        randomData: [[
-            '',
-            'random1',
-            1,
-            'yes'
-        ], [
-            '',
-            'random2',
-            2,
-            'no'
-        ],
-            [
-                '',
-                'random3',
-                3,
-                'yes'
-            ], [
-                '',
-                'random4',
-                4,
-                'no'
-            ], [
-                '',
-                'random5',
-                5,
-                'yes'
-            ]
-        ]
+        }
     };
 
     var newTable = new TableEditor(newData);
     newTable.init();
+
 })(this);

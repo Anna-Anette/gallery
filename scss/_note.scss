@@ -8,9 +8,29 @@ h3, h4 {
     display: none;
     padding: 15px 0;
 }
+thead {
+    td {
+        font-weight: bold;
+    }
+}
 td {
     text-align: center;
     input {
         margin: 0 auto;
+    }
+}
+textarea {
+    margin-bottom: 15px;
+}
+label {
+    margin-bottom: 10px;
+}
+.btn-group {
+    margin-bottom: 15px;
+}
+.sort-by-name {
+    &:hover {
+        color: #4da098;
+        cursor: pointer;
     }
 }
