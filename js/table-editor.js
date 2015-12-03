@@ -4,16 +4,22 @@
         this.data = data;
 
         this.showAddRowBtn = data.buttons.showAddRowBtn;
+
         this.addRowBtn = data.buttons.addRowBtn;
-        this.randomDataBtn = data.buttons.randomDataBtn;
-        this.clearDataBtn = data.buttons.clearDataBtn;
-        this.exportDataBtn = data.buttons.exportDataBtn;
-        this.importDataBtn = data.buttons.importDataBtn;
         this.deleteRowBtn = data.buttons.deleteRowBtn;
+
+        this.randomDataBtn = data.buttons.randomDataBtn;
+        this.exportDataBtn = data.buttons.exportDataBtn;
+
+        this.clearDataBtn = data.buttons.clearDataBtn;
+        this.paginateDataBtn = data.buttons.paginateDataBtn;
+
+        this.importDataBtn = data.buttons.importDataBtn;
 
         this.sortByNameBtn = data.sortBtns.sortByNameBtn;
         this.sortByIdBtn = data.sortBtns.sortByIdBtn;
         this.sortByQtyBtn = data.sortBtns.sortByQtyBtn;
+        this.filterOnFlyBtn = data.sortBtns.filterOnFlyBtn;
 
         this.addRowContainer = data.addRowContainer;
         this.addRowForm = data.addRowForm;
@@ -27,7 +33,7 @@
         this.rowInfo = data.rowInfo;
         this.numCells = data.rowInfo.numCells;
 
-        this.isSortedByName = false;
+        this.isSorted = false;
     }
 
     TableEditor.prototype = {
@@ -90,11 +96,13 @@
 
                 for (k = 0; k <= cellsNum; k++) {
                     td = document.createElement('td');
+                    td.setAttribute('contenteditable', 'true');
                     td.innerHTML = (rowData[k] === '' && k === 0) ? rowsCount += 1 : rowData[k];
 
                     if (k === cellsNum) {
                         td.innerHTML = '';
                         td.appendChild(tdInput);
+                        td.setAttribute('contenteditable', 'false');
                     }
 
                     tr.appendChild(td);
@@ -207,7 +215,7 @@
                 this.tableBody.removeChild(this.tableBody.firstChild);
             }
             this.rowsCount = 0;
-            this.isSortedByName = false;
+            this.isSorted = false;
         },
 
         /**
@@ -233,8 +241,12 @@
 
             this.importDataHolder.value = '';
 
+
             this.exportDataBtn.addEventListener('click', function (e) {
                 e.preventDefault();
+                if (!self.tableBody.children.length) {
+                    return;
+                }
                 self.exportTableData();
                 self.showExportedTableData();
             });
@@ -271,28 +283,30 @@
                 data = this.exportTableData(),
                 rowsCount = this.rowsCount,
                 rows = this.tableBody.children,
+                i = 0,
+                l = rows.length,
                 callback;
 
-            for (var i = 0; i < rows.length; i++) {
+            for (; i < l; i++) {
                 holder.push(data[i]);
             }
 
             if (type === 'name') {
-               callback = function (a, b) {
-                   if (a[1].toLowerCase() > b[1].toLowerCase()) {
-                       return 1;
-                   }
-                   if (a[1].toLowerCase() < b[1].toLowerCase()) {
-                       return -1;
-                   }
-                   return 0;
-               };
+                callback = function (a, b) {
+                    if (a[1].toLowerCase() > b[1].toLowerCase()) {
+                        return -1;
+                    }
+                    if (a[1].toLowerCase() < b[1].toLowerCase()) {
+                        return 1;
+                    }
+                    return 0;
+                };
             } else if (type === 'id') {
-                callback = function(a, b) {
+                callback = function (a, b) {
                     return a[0] - b[0];
                 };
             } else if (type === 'qty') {
-                callback = function(a, b) {
+                callback = function (a, b) {
                     return a[2] - b[2];
                 };
             }
@@ -306,7 +320,7 @@
             holder.forEach(function (el) {
                 self.addRow(el);
             });
-            this.isSortedByName = true;
+            this.isSorted = true;
         },
 
         /**
@@ -335,6 +349,66 @@
             return holder;
         },
 
+        filterOnFly: function () {
+            var data,
+                inputValue,
+                dataValue,
+                i,
+                self = this;
+
+            this.filterOnFlyBtn.addEventListener('keyup', function () {
+                if (!self.tableBody.children) {
+                    return;
+                }
+
+                data = self.tableBody.children;
+                inputValue = this.value.toUpperCase();
+
+                for (i = 0; i < data.length; i++) {
+
+                    dataValue = data[i].children[1].innerHTML.toUpperCase();
+
+                    if (dataValue.indexOf(inputValue) > -1) {
+                        data[i].style.display = 'table-row';
+                    } else {
+                        data[i].style.display = 'none';
+                    }
+                }
+            });
+        },
+
+        pagination: function () {
+            var container = document.getElementById('pagination'),
+                fragment = document.createDocumentFragment(),
+                tableRows = this.tableBody.children,
+                rowsPerPage = 5,
+                i,
+                listEl,
+                link,
+                paginated = false,
+                self = this;
+
+            this.paginateDataBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                if (paginated) {
+                    return;
+                }
+
+                for (i = 0; i < (Math.floor(tableRows.length / rowsPerPage)); i++) {
+
+                    link = document.createElement('a');
+                    link.innerHTML = i + 1;
+
+                    listEl = document.createElement('li');
+                    listEl.appendChild(link);
+
+                    fragment.appendChild(listEl);
+                }
+                container.appendChild(fragment);
+                paginated = true;
+            });
+        },
 
         /**
          * Initialize handlers
@@ -348,9 +422,9 @@
             this.exportTableDataHandler();
             this.importTableDataHandler();
 
-            if (!this.isSortedByName) {
-                this.sortByHandler();
-            }
+            this.sortByHandler();
+            this.filterOnFly();
+            this.pagination();
         }
     };
 
@@ -362,12 +436,14 @@
             randomDataBtn: document.getElementById('demoData'),
             exportDataBtn: document.getElementById('exportTable'),
             importDataBtn: document.getElementById('importDataBtn'),
-            clearDataBtn: document.getElementById('clearTable')
+            clearDataBtn: document.getElementById('clearTable'),
+            paginateDataBtn: document.getElementById('paginate')
         },
         sortBtns: {
             sortByNameBtn: document.getElementById('sortByName'),
             sortByIdBtn: document.getElementById('sortById'),
-            sortByQtyBtn: document.getElementById('sortByQty')
+            sortByQtyBtn: document.getElementById('sortByQty'),
+            filterOnFlyBtn: document.getElementById('filter')
         },
         addRowContainer: document.getElementById('addRowContainer'),
         addRowForm: document.getElementById('addRowForm'),
