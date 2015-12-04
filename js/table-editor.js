@@ -46,18 +46,12 @@
 
             this.showAddRowBtn.addEventListener('click', function (e) {
                 e.preventDefault();
-                self.toggleForm();
+                if (self.addRowContainer.style.display !== 'block') {
+                    self.addRowContainer.style.display = 'block';
+                } else {
+                    self.addRowContainer.style.display = 'none';
+                }
             });
-        },
-        /**
-         * Shows/hides "Add row" form
-         */
-        toggleForm: function () {
-            if (this.addRowContainer.style.display !== 'block') {
-                this.addRowContainer.style.display = 'block';
-            } else {
-                this.addRowContainer.style.display = 'none';
-            }
         },
 
         /**
@@ -82,7 +76,7 @@
             var fragment = document.createDocumentFragment(),
                 rowsNum = rows ? +rows : 1,
                 cellsNum = this.rowInfo.numCells,
-                rowsCount = this.rowsCount,
+                rowsCount = (this.rowsCount < this.tableBody.children.length) ? this.tableBody.children.length : this.rowsCount,
                 tdInput = document.createElement('input'),
                 tr,
                 td,
@@ -172,7 +166,6 @@
                     var text = "",
                         i = 0,
                         wordLength = 7,
-                    //possible = "ABCDEF";
                         possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
                     for (; i < wordLength; i++) {
@@ -241,7 +234,6 @@
 
             this.importDataHolder.value = '';
 
-
             this.exportDataBtn.addEventListener('click', function (e) {
                 e.preventDefault();
                 if (!self.tableBody.children.length) {
@@ -277,7 +269,6 @@
         },
 
         sortByType: function (type) {
-
             var self = this,
                 holder = [],
                 data = this.exportTableData(),
@@ -354,6 +345,7 @@
                 inputValue,
                 dataValue,
                 i,
+                j,
                 self = this;
 
             this.filterOnFlyBtn.addEventListener('keyup', function () {
@@ -364,9 +356,13 @@
                 data = self.tableBody.children;
                 inputValue = this.value.toUpperCase();
 
-                for (i = 0; i < data.length; i++) {
+                for (i = 0, j = data.length; i < j; i++) {
 
                     dataValue = data[i].children[1].innerHTML.toUpperCase();
+
+                    if (dataValue.length < inputValue) {
+                        return;
+                    }
 
                     if (dataValue.indexOf(inputValue) > -1) {
                         data[i].style.display = 'table-row';
