@@ -515,3 +515,5 @@ label { margin-bottom: 10px; }
 .btn-group { margin-bottom: 15px; }
 
 .sort-by:hover { color: #5cb85c; cursor: pointer; }
+
+.red { background: red !important; }

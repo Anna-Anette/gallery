@@ -27,6 +27,7 @@
         this.tableBody = data.tableBody;
 
         this.importDataHolder = data.importDataHolder;
+        this.pagerHolder = data.pagerHolder;
 
         this.randomData = data.randomData;
         this.rowsCount = this.tableBody.children.length;
@@ -150,6 +151,7 @@
             this.randomDataBtn.addEventListener('click', function (e) {
                 e.preventDefault();
                 self.addRandomData();
+                self.addTablePagination();
             });
         },
 
@@ -209,6 +211,7 @@
             }
             this.rowsCount = 0;
             this.isSorted = false;
+            this.pagerHolder.innerHTML = '';
         },
 
         /**
@@ -223,6 +226,7 @@
                 Object.keys(tableData).map(function (val, index) {
                     self.addRow(tableData[index]);
                 });
+                self.addTablePagination();
             });
         },
 
@@ -244,11 +248,17 @@
             });
         },
 
+        /**
+         * Shows Exported table data in the text area
+         */
         showExportedTableData: function () {
             var data = this.exportTableData();
             this.importDataHolder.value = JSON.stringify(data);
         },
 
+        /**
+         * Sorting handler
+         */
         sortByHandler: function () {
             var self = this;
 
@@ -268,6 +278,10 @@
             });
         },
 
+        /**
+         * Sorts table according to sort type
+         * @param {String} type - type of sort
+         */
         sortByType: function (type) {
             var self = this,
                 holder = [],
@@ -340,6 +354,9 @@
             return holder;
         },
 
+        /**
+         * Filters table by name on fly
+         */
         filterOnFly: function () {
             var data,
                 inputValue,
@@ -372,38 +389,70 @@
                 }
             });
         },
+        showHideRows: function (link, perPage, elems, start) {
+            link.addEventListener('click', function () {
+                for (var i = 0; i < perPage; i++) {
 
-        pagination: function () {
-            var container = document.getElementById('pagination'),
-                fragment = document.createDocumentFragment(),
-                tableRows = this.tableBody.children,
-                rowsPerPage = 5,
-                i,
-                listEl,
-                link,
-                paginated = false,
-                self = this;
+                    //for (var k = 0; k < perPage; k++) {
+                        elems[start + i].setAttribute('class', 'red');
+                    //}
+                    console.log(elems[start + i]);
+                }
+
+            });
+        },
+
+        paginationHandler: function () {
+            var self = this;
 
             this.paginateDataBtn.addEventListener('click', function (e) {
                 e.preventDefault();
+                self.addTablePagination();
+            });
+        },
+        /**
+         * Adds pagination for table
+         */
+        addTablePagination: function () {
+            var container = this.pagerHolder,
+                fragment = document.createDocumentFragment(),
+                rows = this.tableBody.children,
+                rowsCount = this.tableBody.children.length,
+                numPages = 0,
+                rowsPerPage = 5,
+                i,
+                j,
+                listEl,
+                link;
 
-                if (paginated) {
+                if (rowsCount <= rowsPerPage) {
                     return;
                 }
 
-                for (i = 0; i < (Math.floor(tableRows.length / rowsPerPage)); i++) {
+                j = rowsCount % rowsPerPage ? Math.ceil(rowsCount / rowsPerPage) : rowsCount / rowsPerPage;
 
+                if (j === numPages) {
+                    return;
+                }
+
+                for (i = 0; i < j; i++) {
                     link = document.createElement('a');
                     link.innerHTML = i + 1;
+
+                    this.showHideRows(link, rowsPerPage, rows, i);
+
 
                     listEl = document.createElement('li');
                     listEl.appendChild(link);
 
                     fragment.appendChild(listEl);
+                    numPages += 1;
                 }
+
+
+
+                container.innerHTML = '';
                 container.appendChild(fragment);
-                paginated = true;
-            });
         },
 
         /**
@@ -420,7 +469,7 @@
 
             this.sortByHandler();
             this.filterOnFly();
-            this.pagination();
+            this.paginationHandler();
         }
     };
 
@@ -445,11 +494,14 @@
         addRowForm: document.getElementById('addRowForm'),
         tableBody: document.getElementById('rowTableBody'),
         importDataHolder: document.getElementById('importData'),
+        pagerHolder: document.getElementById('pagination'),
         rowInfo: {
             numCells: 4
         }
     };
 
+    global.TableEditor = TableEditor;
+console.log(global.TableEditor);
     var newTable = new TableEditor(newData);
     newTable.init();
 
