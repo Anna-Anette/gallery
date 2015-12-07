@@ -27,7 +27,7 @@
         this.tableBody = data.tableBody;
 
         this.importDataHolder = data.importDataHolder;
-        this.pagerHolder = data.pagerHolder;
+        this.pagerContainer = data.pagerContainer;
 
         this.randomData = data.randomData;
         this.rowsCount = this.tableBody.children.length;
@@ -75,28 +75,28 @@
          */
         addRow: function (rowData, rows) {
             var fragment = document.createDocumentFragment(),
-                rowsNum = rows ? +rows : 1,
-                cellsNum = this.rowInfo.numCells,
-                rowsCount = (this.rowsCount < this.tableBody.children.length) ? this.tableBody.children.length : this.rowsCount,
-                tdInput = document.createElement('input'),
+                rowsToAdd = rows ? +rows : 1,
+                cellsNumber = this.rowInfo.numCells,
+                rowsNumber = (this.rowsCount < this.tableBody.children.length) ? this.tableBody.children.length : this.rowsCount,
+                rowEditCheckbox = document.createElement('input'),
                 tr,
                 td,
-                i = 0,
-                k;
+                addedRows = 0,
+                addedCells;
 
-            tdInput.type = 'checkbox';
+            rowEditCheckbox.type = 'checkbox';
 
-            for (; i < rowsNum; i++) {
+            for (; addedRows < rowsToAdd; addedRows++) {
                 tr = document.createElement('tr');
 
-                for (k = 0; k <= cellsNum; k++) {
+                for (addedCells = 0; addedCells <= cellsNumber; addedCells++) {
                     td = document.createElement('td');
                     td.setAttribute('contenteditable', 'true');
-                    td.innerHTML = (rowData[k] === '' && k === 0) ? rowsCount += 1 : rowData[k];
+                    td.innerHTML = (rowData[addedCells] === '' && addedCells === 0) ? rowsNumber += 1 : rowData[addedCells];
 
-                    if (k === cellsNum) {
+                    if (addedCells === cellsNumber) {
                         td.innerHTML = '';
-                        td.appendChild(tdInput);
+                        td.appendChild(rowEditCheckbox);
                         td.setAttribute('contenteditable', 'false');
                     }
 
@@ -105,7 +105,7 @@
                 fragment.appendChild(tr);
             }
 
-            this.rowsCount = rowsCount;
+            this.rowsCount = rowsNumber;
             this.tableBody.appendChild(fragment);
         },
 
@@ -120,10 +120,10 @@
 
         deleteRows: function () {
             var self = this,
-                tableBody = this.tableBody.children,
-                rows = Array.prototype.slice.call(tableBody);
+                tableRows = this.tableBody.children,
+                rowsArray = Array.prototype.slice.call(tableRows);
 
-            rows.forEach(function (row) {
+            rowsArray.forEach(function (row) {
                 if (row.lastChild.childNodes[0].checked) {
                     self.tableBody.removeChild(row);
                 }
@@ -159,35 +159,35 @@
          * Adds random data to a table
          */
         addRandomData: function () {
-            var i = 0,
-                k = 0,
-                l,
-                randomData = [],
-                randomRowsNum = Math.floor(Math.random() * 10) + 1,
+            var randomRowIndex = 0,
+                addedRandomRows = 0,
+                randomRows = [],
+                randomRowsLength,
+                randomNumberOfRows = Math.floor(Math.random() * 10) + 1,
                 generateRandomName = function () {
-                    var text = "",
-                        i = 0,
+                    var result = "",
+                        letterNumber = 0,
                         wordLength = 7,
-                        possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+                        possibleSymbols = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-                    for (; i < wordLength; i++) {
-                        text += possible.charAt(Math.floor(Math.random() * possible.length));
+                    for (; letterNumber < wordLength; letterNumber++) {
+                        result += possibleSymbols.charAt(Math.floor(Math.random() * possibleSymbols.length));
                     }
-                    return text;
+                    return result;
                 };
 
-            for (; k < randomRowsNum; k++) {
-                randomData.push([
+            for (; addedRandomRows < randomNumberOfRows; addedRandomRows++) {
+                randomRows.push([
                     '',
                     generateRandomName(),
                     Math.floor(Math.random() * 100) + 1,
                     Math.floor(Math.round(Math.random())) ? 'yes' : 'no'
                 ]);
             }
-            for (l = randomData.length; i < l; i++) {
-                this.addRow(randomData[i]);
+            for (randomRowsLength = randomRows.length; randomRowIndex < randomRowsLength; randomRowIndex++) {
+                this.addRow(randomRows[randomRowIndex]);
             }
-            randomData = null;
+            randomRows = null;
         },
 
         /**
@@ -211,7 +211,7 @@
             }
             this.rowsCount = 0;
             this.isSorted = false;
-            this.pagerHolder.innerHTML = '';
+            this.pagerContainer.innerHTML = '';
         },
 
         /**
@@ -252,8 +252,8 @@
          * Shows Exported table data in the text area
          */
         showExportedTableData: function () {
-            var data = this.exportTableData();
-            this.importDataHolder.value = JSON.stringify(data);
+            var exportedData = this.exportTableData();
+            this.importDataHolder.value = JSON.stringify(exportedData);
         },
 
         /**
@@ -284,20 +284,20 @@
          */
         sortByType: function (type) {
             var self = this,
-                holder = [],
-                data = this.exportTableData(),
+                sortResult = [],
+                exportedTableData = this.exportTableData(),
                 rowsCount = this.rowsCount,
                 rows = this.tableBody.children,
-                i = 0,
-                l = rows.length,
-                callback;
+                sortedRow = 0,
+                rowsLength = rows.length,
+                sortOrderCallback;
 
-            for (; i < l; i++) {
-                holder.push(data[i]);
+            for (; sortedRow < rowsLength; sortedRow++) {
+                sortResult.push(exportedTableData[sortedRow]);
             }
 
             if (type === 'name') {
-                callback = function (a, b) {
+                sortOrderCallback = function (a, b) {
                     if (a[1].toLowerCase() > b[1].toLowerCase()) {
                         return -1;
                     }
@@ -307,22 +307,22 @@
                     return 0;
                 };
             } else if (type === 'id') {
-                callback = function (a, b) {
+                sortOrderCallback = function (a, b) {
                     return a[0] - b[0];
                 };
             } else if (type === 'qty') {
-                callback = function (a, b) {
+                sortOrderCallback = function (a, b) {
                     return a[2] - b[2];
                 };
             }
 
-            holder.sort(callback);
+            sortResult.sort(sortOrderCallback);
 
             this.clearTable();
 
             this.rowsCount = rowsCount;
 
-            holder.forEach(function (el) {
+            sortResult.forEach(function (el) {
                 self.addRow(el);
             });
             this.isSorted = true;
@@ -334,35 +334,35 @@
          * @returns {Object} holder  - an object with exported data
          */
         exportTableData: function () {
-            var holder = {},
-                holderItem = [],
-                rows = this.tableBody.children,
-                i = 0,
-                rowsLength = rows.length,
-                l,
+            var exportedResult = {},
+                exportedItem = [],
+                tableRows = this.tableBody.children,
+                resultIndex = 0,
+                exportedTableRowsLength = tableRows.length,
+                exportedCellsLength,
                 cellsLength,
                 rowsData;
 
-            for (; i < rowsLength; i++) {
-                rowsData = rows[i].children;
-                for (l = 0, cellsLength = rowsData.length; l < cellsLength - 1; l++) {
-                    holderItem.push(rowsData[l].innerHTML);
+            for (; resultIndex < exportedTableRowsLength; resultIndex++) {
+                rowsData = tableRows[resultIndex].children;
+                for (exportedCellsLength = 0, cellsLength = rowsData.length; exportedCellsLength < cellsLength - 1; exportedCellsLength++) {
+                    exportedItem.push(rowsData[exportedCellsLength].innerHTML);
                 }
-                holder[i] = holderItem;
-                holderItem = [];
+                exportedResult[resultIndex] = exportedItem;
+                exportedItem = [];
             }
-            return holder;
+            return exportedResult;
         },
 
         /**
          * Filters table by name on fly
          */
         filterOnFly: function () {
-            var data,
-                inputValue,
-                dataValue,
-                i,
-                j,
+            var tableRows,
+                filterInputValue,
+                filteredValue,
+                filteredRows,
+                tableRowsLength,
                 self = this;
 
             this.filterOnFlyBtn.addEventListener('keyup', function () {
@@ -370,25 +370,26 @@
                     return;
                 }
 
-                data = self.tableBody.children;
-                inputValue = this.value.toUpperCase();
+                tableRows = self.tableBody.children;
+                filterInputValue = this.value.toUpperCase();
 
-                for (i = 0, j = data.length; i < j; i++) {
+                for (filteredRows = 0, tableRowsLength = tableRows.length; filteredRows < tableRowsLength; filteredRows++) {
 
-                    dataValue = data[i].children[1].innerHTML.toUpperCase();
+                    filteredValue = tableRows[filteredRows].children[1].innerHTML.toUpperCase();
 
-                    if (dataValue.length < inputValue) {
+                    if (filteredValue.length < filterInputValue) {
                         return;
                     }
 
-                    if (dataValue.indexOf(inputValue) > -1) {
-                        data[i].style.display = 'table-row';
+                    if (filteredValue.indexOf(filterInputValue) > -1) {
+                        tableRows[filteredRows].style.display = 'table-row';
                     } else {
-                        data[i].style.display = 'none';
+                        tableRows[filteredRows].style.display = 'none';
                     }
                 }
             });
         },
+
         showHideRows: function (link, perPage, elems, start) {
             link.addEventListener('click', function () {
                 for (var i = 0; i < perPage; i++) {
@@ -414,39 +415,39 @@
          * Adds pagination for table
          */
         addTablePagination: function () {
-            var container = this.pagerHolder,
+            var container = this.pagerContainer,
                 fragment = document.createDocumentFragment(),
                 rows = this.tableBody.children,
-                rowsCount = this.tableBody.children.length,
-                numPages = 0,
+                rowsNumber = this.tableBody.children.length,
+                numberOfPages = 0,
                 rowsPerPage = 5,
-                i,
-                j,
-                listEl,
-                link;
+                createdPaginationElement,
+                createdPagesNumber,
+                listElement,
+                paginationLink;
 
-                if (rowsCount <= rowsPerPage) {
+                if (rowsNumber <= rowsPerPage) {
                     return;
                 }
 
-                j = rowsCount % rowsPerPage ? Math.ceil(rowsCount / rowsPerPage) : rowsCount / rowsPerPage;
+                createdPagesNumber = rowsNumber % rowsPerPage ? Math.ceil(rowsNumber / rowsPerPage) : rowsNumber / rowsPerPage;
 
-                if (j === numPages) {
+                if (createdPagesNumber === numberOfPages) {
                     return;
                 }
 
-                for (i = 0; i < j; i++) {
-                    link = document.createElement('a');
-                    link.innerHTML = i + 1;
+                for (createdPaginationElement = 0; createdPaginationElement < createdPagesNumber; createdPaginationElement++) {
+                    paginationLink = document.createElement('a');
+                    paginationLink.innerHTML = createdPaginationElement + 1;
 
-                    this.showHideRows(link, rowsPerPage, rows, i);
+                    this.showHideRows(paginationLink, rowsPerPage, rows, createdPaginationElement);
 
 
-                    listEl = document.createElement('li');
-                    listEl.appendChild(link);
+                    listElement = document.createElement('li');
+                    listElement.appendChild(paginationLink);
 
-                    fragment.appendChild(listEl);
-                    numPages += 1;
+                    fragment.appendChild(listElement);
+                    numberOfPages += 1;
                 }
 
 
@@ -494,7 +495,7 @@
         addRowForm: document.getElementById('addRowForm'),
         tableBody: document.getElementById('rowTableBody'),
         importDataHolder: document.getElementById('importData'),
-        pagerHolder: document.getElementById('pagination'),
+        pagerContainer: document.getElementById('pagination'),
         rowInfo: {
             numCells: 4
         }

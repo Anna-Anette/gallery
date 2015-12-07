@@ -90,6 +90,35 @@
 <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
 <script src="js/bootstrap.min.js"></script>
 <script src="js/table-editor.js"></script>
-
+<script type="text/javascript">
+    var newData = {
+        buttons: {
+            showAddRowBtn: document.getElementById('showAddRowForm'),
+            deleteRowBtn: document.getElementById('deleteRowBtn'),
+            addRowBtn: document.getElementById('addNewRowBtn'),
+            randomDataBtn: document.getElementById('demoData'),
+            exportDataBtn: document.getElementById('exportTable'),
+            importDataBtn: document.getElementById('importDataBtn'),
+            clearDataBtn: document.getElementById('clearTable'),
+            paginateDataBtn: document.getElementById('paginate')
+        },
+        sortBtns: {
+            sortByNameBtn: document.getElementById('sortByName'),
+            sortByIdBtn: document.getElementById('sortById'),
+            sortByQtyBtn: document.getElementById('sortByQty'),
+            filterOnFlyBtn: document.getElementById('filter')
+        },
+        addRowContainer: document.getElementById('addRowContainer'),
+        addRowForm: document.getElementById('addRowForm'),
+        tableBody: document.getElementById('rowTableBody'),
+        importDataHolder: document.getElementById('importData'),
+        pagerContainer: document.getElementById('pagination'),
+        rowInfo: {
+            numCells: 4
+        }
+    };
+    var newTable = new TableEditor(newData);
+    newTable.init();
+</script>
 </body>
 </html>
