@@ -101,11 +101,10 @@
             var self = this,
                 sortResult = [],
                 entries = this.dataObject,
-                sortedEntry = 0,
-                entruesCount = this.entriesNumber,
+                sortedEntry,
+                entriesCount = this.entriesNumber,
                 sortOrderCallback;
-
-            for (; sortedEntry < entruesCount; sortedEntry++) {
+            for (sortedEntry = 0; sortedEntry < entriesCount; sortedEntry++) {
                 sortResult.push(entries[sortedEntry]);
             }
             if (type === 'name') {
@@ -147,12 +146,8 @@
          * @returns {boolean|Object} holder  - an object with exported data
          */
         exportTableData: function () {
-            var data = this.dataObject,
-                entry;
-            for (entry in data) {
-                if (!data.hasOwnProperty(entry)) {
-                    return false;
-                }
+            if (!this.entriesNumber) {
+                return false;
             }
             return this.dataObject;
         }

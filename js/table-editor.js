@@ -205,7 +205,9 @@
 
             this.importDataBtn.addEventListener('click', function () {
                 tableData = self.importDataHolder.value ? JSON.parse(self.importDataHolder.value) : '';
-                self.model.addRandomEntries(tableData);
+
+                self.model.importTableData(tableData);
+
                 Object.keys(tableData).map(function (val, index) {
                     self.addRow(tableData[index]);
                 });
@@ -225,7 +227,7 @@
             this.exportDataBtn.addEventListener('click', function (e) {
                 e.preventDefault();
                 data = self.model.exportTableData();
-                if (!data) {
+                if (data) {
                     self.showExportedTableData(data);
                 }
             });
@@ -298,10 +300,6 @@
                 for (filteredRows = 0, tableRowsLength = tableRows.length; filteredRows < tableRowsLength; filteredRows++) {
 
                     filteredValue = tableRows[filteredRows].children[1].innerHTML.toUpperCase();
-
-                    if (filteredValue.length < filterInputValue.length) {
-                        return;
-                    }
 
                     if (filteredValue.indexOf(filterInputValue) > -1) {
                         tableRows[filteredRows].setAttribute('class', 'visible');
@@ -402,7 +400,6 @@
             this.sortByHandler();
             this.filterOnFly();
             this.paginationHandler();
-            console.log(this.model);
         }
     };
 
