@@ -258,34 +258,43 @@
             var self = this;
 
             this.sortByNameBtn.addEventListener('click', function (e) {
+                var element = this.getElementsByClassName('glyphicon')[0];
+
                 e.preventDefault();
-                if (this.getElementsByClassName('glyphicon')[0].getAttribute('class') === 'glyphicon glyphicon-arrow-down') {
-                    this.getElementsByClassName('glyphicon')[0].setAttribute('class', 'glyphicon glyphicon-arrow-up');
+
+                if (element.getAttribute('class') === 'glyphicon glyphicon-arrow-down') {
+                    element.setAttribute('class', 'glyphicon glyphicon-arrow-up');
                     self._sortByType('name', 'up');
                 } else {
-                    this.getElementsByClassName('glyphicon')[0].setAttribute('class', 'glyphicon glyphicon-arrow-down');
+                    element.setAttribute('class', 'glyphicon glyphicon-arrow-down');
                     self._sortByType('name', 'down');
                 }
             });
 
             this.sortByIdBtn.addEventListener('click', function (e) {
+                var element = this.getElementsByClassName('glyphicon')[0];
+
                 e.preventDefault();
-                if (this.getElementsByClassName('glyphicon')[0].getAttribute('class') === 'glyphicon glyphicon-arrow-down') {
-                    this.getElementsByClassName('glyphicon')[0].setAttribute('class', 'glyphicon glyphicon-arrow-up');
+
+                if (element.getAttribute('class') === 'glyphicon glyphicon-arrow-down') {
+                    element.setAttribute('class', 'glyphicon glyphicon-arrow-up');
                     self._sortByType('id', 'up');
                 } else {
-                    this.getElementsByClassName('glyphicon')[0].setAttribute('class', 'glyphicon glyphicon-arrow-down');
+                    element.setAttribute('class', 'glyphicon glyphicon-arrow-down');
                     self._sortByType('id', 'down');
                 }
             });
 
             this.sortByQtyBtn.addEventListener('click', function (e) {
+                var element = this.getElementsByClassName('glyphicon')[0];
+
                 e.preventDefault();
-                if (this.getElementsByClassName('glyphicon')[0].getAttribute('class') === 'glyphicon glyphicon-arrow-down') {
-                    this.getElementsByClassName('glyphicon')[0].setAttribute('class', 'glyphicon glyphicon-arrow-up');
+
+                if (element.getAttribute('class') === 'glyphicon glyphicon-arrow-down') {
+                    element.setAttribute('class', 'glyphicon glyphicon-arrow-up');
                     self._sortByType('qty', 'up');
                 } else {
-                    this.getElementsByClassName('glyphicon')[0].setAttribute('class', 'glyphicon glyphicon-arrow-down');
+                    element.setAttribute('class', 'glyphicon glyphicon-arrow-down');
                     self._sortByType('qty', 'down');
                 }
             });
@@ -436,7 +445,6 @@
                 paginationLink.innerHTML = createdPaginationElement + 1;
 
                 this.toggleRowsHandler(paginationLink);
-
 
                 listElement = document.createElement('li');
                 listElement.appendChild(paginationLink);
