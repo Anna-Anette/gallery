@@ -259,28 +259,47 @@
 
             this.sortByNameBtn.addEventListener('click', function (e) {
                 e.preventDefault();
-                self._sortByType('name');
+                if (this.getElementsByClassName('glyphicon')[0].getAttribute('class') === 'glyphicon glyphicon-arrow-down') {
+                    this.getElementsByClassName('glyphicon')[0].setAttribute('class', 'glyphicon glyphicon-arrow-up');
+                    self._sortByType('name', 'up');
+                } else {
+                    this.getElementsByClassName('glyphicon')[0].setAttribute('class', 'glyphicon glyphicon-arrow-down');
+                    self._sortByType('name', 'down');
+                }
             });
 
             this.sortByIdBtn.addEventListener('click', function (e) {
                 e.preventDefault();
-                self._sortByType('id');
+                if (this.getElementsByClassName('glyphicon')[0].getAttribute('class') === 'glyphicon glyphicon-arrow-down') {
+                    this.getElementsByClassName('glyphicon')[0].setAttribute('class', 'glyphicon glyphicon-arrow-up');
+                    self._sortByType('id', 'up');
+                } else {
+                    this.getElementsByClassName('glyphicon')[0].setAttribute('class', 'glyphicon glyphicon-arrow-down');
+                    self._sortByType('id', 'down');
+                }
             });
 
             this.sortByQtyBtn.addEventListener('click', function (e) {
                 e.preventDefault();
-                self._sortByType('qty');
+                if (this.getElementsByClassName('glyphicon')[0].getAttribute('class') === 'glyphicon glyphicon-arrow-down') {
+                    this.getElementsByClassName('glyphicon')[0].setAttribute('class', 'glyphicon glyphicon-arrow-up');
+                    self._sortByType('qty', 'up');
+                } else {
+                    this.getElementsByClassName('glyphicon')[0].setAttribute('class', 'glyphicon glyphicon-arrow-down');
+                    self._sortByType('qty', 'down');
+                }
             });
         },
 
         /**
          * Sorts table according to sort type
          * @param {String} type - type of sort
+         * @param {String} order - sort order
          */
-        _sortByType: function (type) {
+        _sortByType: function (type, order) {
             var self = this,
                 index,
-                sortResult = this.model._sortByType(type);
+                sortResult = this.model._sortByType(type, order);
 
             this._clearTable();
 
@@ -401,6 +420,7 @@
                 paginationLink;
 
             if (rowsNumber <= rowsPerPage) {
+                this.toggleRows(1);
                 container.innerHTML = '';
                 return;
             }

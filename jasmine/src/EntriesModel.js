@@ -97,9 +97,10 @@
          * Sorts table according to sort type
          *
          * @param {String} type - type of sort
+         * @param {String} order - sort order
          * @returns {Object} - data object
          */
-        _sortByType: function (type) {
+        _sortByType: function (type, order) {
             var self = this,
                 sortResult = [],
                 entries = this.dataObject,
@@ -114,21 +115,36 @@
 
             if (type === 'name') {
                 sortOrderCallback = function (a, b) {
-                    if (a[1].toLowerCase() > b[1].toLowerCase()) {
-                        return 1;
-                    }
-                    if (a[1].toLowerCase() < b[1].toLowerCase()) {
-                        return -1;
+                    if (order !== 'up') {
+                        if (a[1].toLowerCase() > b[1].toLowerCase()) {
+                            return 1;
+                        }
+                        if (a[1].toLowerCase() < b[1].toLowerCase()) {
+                            return -1;
+                        }
+                    } else {
+                        if (a[1].toLowerCase() > b[1].toLowerCase()) {
+                            return -1;
+                        }
+                        if (a[1].toLowerCase() < b[1].toLowerCase()) {
+                            return 1;
+                        }
                     }
                     return 0;
                 };
             } else if (type === 'id') {
                 sortOrderCallback = function (a, b) {
-                    return a[0] - b[0];
+                    if (order !== 'up') {
+                        return a[0] - b[0];
+                    }
+                    return b[0] - a[0];
                 };
             } else if (type === 'qty') {
                 sortOrderCallback = function (a, b) {
-                    return a[2] - b[2];
+                    if (order !== 'up') {
+                        return a[2] - b[2];
+                    }
+                    return b[2] - a[2];
                 };
             }
 
