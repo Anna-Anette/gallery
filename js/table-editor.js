@@ -36,8 +36,7 @@
         this.rowInfo = data.rowInfo;
         this.numCells = data.rowInfo.numCells;
 
-        this.rowsPerPage = 5;
-
+        this.rowsPerPage = 10;
     }
 
     TableEditor.prototype = {
@@ -99,8 +98,8 @@
                 for (addedCells = 0; addedCells <= cellsNumber; addedCells++) {
                     td = document.createElement('td');
                     td.setAttribute('contenteditable', 'true');
-                    td.innerHTML = (addedCells === 0) ? (rowData[addedCells] + 1) : rowData[addedCells];
 
+                    td.innerHTML = (addedCells === 0) ? (rowData[addedCells]) : rowData[addedCells];
                     if (addedCells === cellsNumber) {
                         td.innerHTML = '';
                         td.appendChild(rowEditCheckbox);
@@ -113,8 +112,12 @@
                 fragment.appendChild(tr);
             }
             this.tableBody.appendChild(fragment);
+            this.addTablePagination();
         },
-
+        /**
+         * Delete row handler
+         *
+         */
         deleteRowHandler: function () {
             var self = this;
 
@@ -122,13 +125,16 @@
                 e.preventDefault();
 
                 self.deleteRow();
+                self.addTablePagination();
             });
         },
-
+        /**
+         * Deletes row from DOM and updates data
+         *
+         */
         deleteRow: function () {
             var self = this,
-                tableRows = this.tableBody.children,
-                rowsArray = Array.prototype.slice.call(tableRows);
+                rowsArray = Array.prototype.slice.call(this.tableBody.children);
 
             rowsArray.forEach(function (row, index) {
                 if (row.lastChild.childNodes[0].checked) {
@@ -142,13 +148,13 @@
         },
 
         /**
-         * Adds new row from the form data
+         * Adds new row from the form
          */
         getRowDataFormTheForm: function () {
             var rowsCount = this.model.entriesNumber;
             return [
-                rowsCount,
-                document.getElementById('name').value,
+                rowsCount + 1,
+                document.getElementById('name').value ? document.getElementById('name').value : 'Empty',
                 +document.getElementById('qtySelect').value,
                 document.getElementById('available').checked ? 'yes' : 'no'
             ];
@@ -164,18 +170,19 @@
                 e.preventDefault();
                 data = self.model.addRandomEntries();
 
-                Object.keys(data).map(function (val, index) {
-                    self.addRow(data[index]);
-                });
-                // self.addTablePagination();
+                for (var index in data) {
+                    if (data.hasOwnProperty(index)) {
+                        self.addRow(data[index]);
+                    }
+                }
+                self.addTablePagination();
             });
         },
 
         /**
-         *
          * Clears table data
          */
-        clearTable: function () {
+        _clearTable: function () {
             while (this.tableBody.firstChild) {
                 this.tableBody.removeChild(this.tableBody.firstChild);
             }
@@ -183,35 +190,37 @@
         },
 
         /**
-         * Handles event for table data clear
+         * Handles event for table data clearing
          */
         clearTableHandler: function () {
             var self = this;
 
             this.clearDataBtn.addEventListener('click', function (e) {
                 e.preventDefault();
-                self.clearTable();
+                self._clearTable();
                 self.model.clearData();
             });
         },
-
 
         /**
          * Imports Table data from the text area
          */
         importTableDataHandler: function () {
             var self = this,
-                tableData;
+                data;
 
             this.importDataBtn.addEventListener('click', function () {
-                tableData = self.importDataHolder.value ? JSON.parse(self.importDataHolder.value) : '';
+                data = self.importDataHolder.value ? JSON.parse(self.importDataHolder.value) : '';
 
-                self.model.importTableData(tableData);
+                self.model.importTableData(data);
 
-                Object.keys(tableData).map(function (val, index) {
-                    self.addRow(tableData[index]);
-                });
-                //self.addTablePagination();
+                for (var index in data) {
+                    if (data.hasOwnProperty(index)) {
+                        self.addRow(data[index]);
+                    }
+                }
+
+                self.addTablePagination();
             });
         },
 
@@ -226,9 +235,10 @@
 
             this.exportDataBtn.addEventListener('click', function (e) {
                 e.preventDefault();
+
                 data = self.model.exportTableData();
                 if (data) {
-                    self.showExportedTableData(data);
+                    self._showExportedTableData(data);
                 }
             });
         },
@@ -237,29 +247,29 @@
          * Shows Exported table data in the text area
          * @params {object) data - an object with data
          */
-        showExportedTableData: function (data) {
+        _showExportedTableData: function (data) {
             this.importDataHolder.value = JSON.stringify(data);
         },
 
         /**
-         * Sorting handler
+         * Sorting handlers
          */
         sortByHandler: function () {
             var self = this;
 
             this.sortByNameBtn.addEventListener('click', function (e) {
                 e.preventDefault();
-                self.sortByType('name');
+                self._sortByType('name');
             });
 
             this.sortByIdBtn.addEventListener('click', function (e) {
                 e.preventDefault();
-                self.sortByType('id');
+                self._sortByType('id');
             });
 
             this.sortByQtyBtn.addEventListener('click', function (e) {
                 e.preventDefault();
-                self.sortByType('qty');
+                self._sortByType('qty');
             });
         },
 
@@ -267,15 +277,18 @@
          * Sorts table according to sort type
          * @param {String} type - type of sort
          */
-        sortByType: function (type) {
+        _sortByType: function (type) {
             var self = this,
-                sortResult = this.model.sortByType(type);
+                index,
+                sortResult = this.model._sortByType(type);
 
-            this.clearTable();
+            this._clearTable();
 
-            Object.keys(sortResult).map(function (val, index) {
-                self.addRow(sortResult[index]);
-            });
+            for (index in sortResult) {
+                if (sortResult.hasOwnProperty(index)) {
+                    self.addRow(sortResult[index]);
+                }
+            }
         },
 
         /**
@@ -310,29 +323,60 @@
             });
         },
 
-        showHideRowsHandler: function (link) {
+        /**
+         * Makes Pagination active
+         * @param [pagerElement] - a pager element
+         */
+        _makePaginationActive: function (pagerElement) {
+            var page = pagerElement ? +pagerElement.innerHTML - 1 : 0,
+                pagerElements = Array.prototype.slice.call(this.pagerContainer.children);
+
+            pagerElements.forEach(function (element) {
+                element.setAttribute('class', '');
+            });
+
+            this.pagerContainer.children[page].setAttribute('class', 'active');
+        },
+
+        /**
+         * Show/hide rows handler
+         * @param link - pagination link
+         */
+        toggleRowsHandler: function (link) {
             var self = this;
+
             link.addEventListener('click', function (e) {
                 e.preventDefault();
-                self.showHideRows(this);
+
+                self.toggleRows(this.innerHTML);
+                self._makePaginationActive(this);
             });
         },
 
-        showHideRows: function (link, rowsPerPage) {
-            var elemsArr = Array.prototype.slice.call(this.tableBody.children),
+        /**
+         * Shows/hides rows
+         * @param {number} page - a page number
+         * @param {number} [rowsPerPage] - a number of rows per page
+         */
+        toggleRows: function (page, rowsPerPage) {
+            var elementsArr = Array.prototype.slice.call(this.tableBody.children),
                 perPage = rowsPerPage ? rowsPerPage : this.rowsPerPage,
-                startPage;
-            startPage = (+link.innerHTML - 1) * perPage;
-            elemsArr.forEach(function (el) {
+                startPage = (+page - 1) * perPage;
+
+            elementsArr.forEach(function (el) {
                 el.setAttribute('class', 'hidden');
             });
+
             for (var k = startPage; k < startPage + perPage; k++) {
-                if (elemsArr[k] !== undefined) {
-                    elemsArr[k].setAttribute('class', 'visible');
+                if (elementsArr[k] !== undefined) {
+                    elementsArr[k].setAttribute('class', 'visible');
                 }
             }
         },
 
+        /**
+         * A handler for "Paginate" button
+         */
         paginationHandler: function () {
             var self = this;
 
@@ -341,6 +385,7 @@
                 self.addTablePagination();
             });
         },
+
         /**
          * Adds pagination for table
          */
@@ -370,7 +415,7 @@
                 paginationLink = document.createElement('a');
                 paginationLink.innerHTML = createdPaginationElement + 1;
 
-                this.showHideRowsHandler(paginationLink);
+                this.toggleRowsHandler(paginationLink);
 
 
                 listElement = document.createElement('li');
@@ -380,9 +425,11 @@
                 numberOfPages += 1;
             }
 
-
             container.innerHTML = '';
             container.appendChild(fragment);
+
+            this.toggleRows(1);
+            this._makePaginationActive();
         },
 
         /**

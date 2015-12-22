@@ -42,12 +42,11 @@ describe("EntriesModel", function () {
         var data = tableEditor.exportTableData();
 
         tableEditor.importTableData(data);
-
         expect(tableEditor.dataObject).toEqual(data);
     });
 
     it("should sort data by name", function () {
-        var data = tableEditor.sortByType('name');
+        var data = tableEditor._sortByType('name');
 
         expect(tableEditor.dataObject).toEqual(data);
 
@@ -55,7 +54,7 @@ describe("EntriesModel", function () {
     });
 
     it("should sort data by ID", function () {
-        tableEditor.sortByType('id');
+        tableEditor._sortByType('id');
 
         expect(tableEditor.dataObject).toEqual({0: row0, 1: row1});
 
@@ -63,7 +62,7 @@ describe("EntriesModel", function () {
     });
 
     it("should sort data by qty", function () {
-        tableEditor.sortByType('qty');
+        tableEditor._sortByType('qty');
 
         expect(tableEditor.dataObject).toEqual({0: row0, 1: row1});
 
@@ -75,6 +74,4 @@ describe("EntriesModel", function () {
             data = tableEditor.addRandomEntries();
         expect(tableEditor.entriesNumber === entriesNumber + data.length).toBeTruthy();
     });
-
-
 });

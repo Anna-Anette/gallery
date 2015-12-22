@@ -41,11 +41,13 @@
          * Import data
          */
         importTableData: function (data) {
-            var self = this;
+            var self = this, index;
 
-            Object.keys(data).map(function (val, index) {
-                self.addEntry(data[index]);
-            });
+            for (index in data) {
+                if (data.hasOwnProperty(index)) {
+                    self.addEntry(data[index]);
+                }
+            }
         },
 
         /**
@@ -62,7 +64,7 @@
 
             for (; addedRandomRows < randomNumberOfRows; addedRandomRows++) {
                 randomRows.push([
-                    rowsCount + addedRandomRows,
+                    rowsCount + addedRandomRows + 1,
                     generateRandomName(),
                     Math.floor(Math.random() * 1000) + 1,
                     Math.floor(Math.round(Math.random())) ? 'yes' : 'no'
@@ -97,16 +99,19 @@
          * @param {String} type - type of sort
          * @returns {Object} - data object
          */
-        sortByType: function (type) {
+        _sortByType: function (type) {
             var self = this,
                 sortResult = [],
                 entries = this.dataObject,
                 sortedEntry,
-                entriesCount = this.entriesNumber,
                 sortOrderCallback;
-            for (sortedEntry = 0; sortedEntry < entriesCount; sortedEntry++) {
-                sortResult.push(entries[sortedEntry]);
+
+            for (sortedEntry in entries) {
+                if (entries.hasOwnProperty(sortedEntry)) {
+                    sortResult.push(entries[sortedEntry]);
+                }
             }
+
             if (type === 'name') {
                 sortOrderCallback = function (a, b) {
                     if (a[1].toLowerCase() > b[1].toLowerCase()) {
