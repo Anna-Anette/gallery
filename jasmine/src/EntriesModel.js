@@ -1,7 +1,6 @@
 (function (global) {
     'use strict';
     function EntriesModel() {
-        this.isSorted = false;
         this.entriesNumber = 0;
         this.dataObject = {};
     }
@@ -34,7 +33,6 @@
         clearData: function () {
             this.dataObject = {};
             this.entriesNumber = 0;
-            this.isSorted = false;
         },
 
         /**
@@ -54,25 +52,25 @@
          * Add random data
          */
         addRandomEntries: function () {
-            var randomRowIndex = 0,
-                addedRandomRows = 0,
+            var i = 0,
+                j = 0,
                 randomRows = [],
                 randomRowsLength,
                 rowsCount = this.entriesNumber,
                 randomNumberOfRows = Math.floor(Math.random() * 10) + 1,
-                generateRandomName = this.generateRandomName;
+                generateRandomName = this._generateRandomName;
 
-            for (; addedRandomRows < randomNumberOfRows; addedRandomRows++) {
+            for (; j < randomNumberOfRows; j++) {
                 randomRows.push([
-                    rowsCount + addedRandomRows + 1,
+                    rowsCount + j + 1,
                     generateRandomName(),
                     Math.floor(Math.random() * 1000) + 1,
                     Math.floor(Math.round(Math.random())) ? 'yes' : 'no'
                 ]);
             }
 
-            for (randomRowsLength = randomRows.length; randomRowIndex < randomRowsLength; randomRowIndex++) {
-                this.addEntry(randomRows[randomRowIndex]);
+            for (randomRowsLength = randomRows.length; i < randomRowsLength; i++) {
+                this.addEntry(randomRows[i]);
             }
 
             return randomRows;
@@ -81,13 +79,13 @@
         /**
          * Generates random name for random data
          */
-        generateRandomName: function () {
+        _generateRandomName: function () {
             var result = "",
-                letterNumber = 0,
+                i = 0,
                 wordLength = Math.floor(Math.random() * 10) + 2,
                 possibleSymbols = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-            for (; letterNumber < wordLength; letterNumber++) {
+            for (; i < wordLength; i++) {
                 result += possibleSymbols.charAt(Math.floor(Math.random() * possibleSymbols.length));
             }
             return result;
@@ -100,7 +98,7 @@
          * @param {String} order - sort order
          * @returns {Object} - data object
          */
-        _sortByType: function (type, order) {
+        sortByType: function (type, order) {
             var self = this,
                 sortResult = [],
                 entries = this.dataObject,
@@ -155,8 +153,6 @@
             sortResult.forEach(function (el) {
                 self.addEntry(el);
             });
-
-            this.isSorted = true;
 
             return this.dataObject;
         },

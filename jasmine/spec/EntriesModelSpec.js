@@ -46,7 +46,7 @@ describe("EntriesModel", function () {
     });
 
     it("should sort data by name", function () {
-        var data = tableEditor._sortByType('name');
+        var data = tableEditor.sortByType('name');
 
         expect(tableEditor.dataObject).toEqual(data);
 
@@ -54,7 +54,7 @@ describe("EntriesModel", function () {
     });
 
     it("should sort data by ID", function () {
-        tableEditor._sortByType('id');
+        tableEditor.sortByType('id');
 
         expect(tableEditor.dataObject).toEqual({0: row0, 1: row1});
 
@@ -62,7 +62,7 @@ describe("EntriesModel", function () {
     });
 
     it("should sort data by qty", function () {
-        tableEditor._sortByType('qty');
+        tableEditor.sortByType('qty');
 
         expect(tableEditor.dataObject).toEqual({0: row0, 1: row1});
 

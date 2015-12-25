@@ -5,48 +5,51 @@
 
         this.model = new EntriesModel();
 
+
         this.showAddRowBtn = data.buttons.showAddRowBtn;
 
         this.addRowBtn = data.buttons.addRowBtn;
         this.deleteRowBtn = data.buttons.deleteRowBtn;
-
         this.randomDataBtn = data.buttons.randomDataBtn;
         this.exportDataBtn = data.buttons.exportDataBtn;
-
         this.clearDataBtn = data.buttons.clearDataBtn;
         this.paginateDataBtn = data.buttons.paginateDataBtn;
-
         this.importDataBtn = data.buttons.importDataBtn;
-
         this.sortByNameBtn = data.sortBtns.sortByNameBtn;
         this.sortByIdBtn = data.sortBtns.sortByIdBtn;
         this.sortByQtyBtn = data.sortBtns.sortByQtyBtn;
         this.filterOnFlyBtn = data.sortBtns.filterOnFlyBtn;
-
         this.addRowContainer = data.addRowContainer;
         this.addRowForm = data.addRowForm;
-
         this.tableBody = data.tableBody;
-
         this.importDataHolder = data.importDataHolder;
         this.pagerContainer = data.pagerContainer;
-
         this.randomData = data.randomData;
-
         this.rowInfo = data.rowInfo;
         this.numCells = data.rowInfo.numCells;
+        this.rowsPerPage = 5;
 
-        this.rowsPerPage = 10;
     }
 
     TableEditor.prototype = {
+
+        extendOptions: function () {
+            for (var i = 1; i < arguments.length; i++) {
+                for (var key in arguments[i]) {
+                    if (arguments[i].hasOwnProperty(key)) {
+                        arguments[0][key] = arguments[i][key];
+                    }
+                }
+            }
+            return arguments[0];
+        },
 
         /**
          * Toggle "Add row" form handler
          */
         toggleFormHandler: function () {
             var self = this;
-
+            //MOve to CSS
             this.showAddRowBtn.addEventListener('click', function (e) {
                 e.preventDefault();
                 if (self.addRowContainer.style.display !== 'block') {
@@ -87,20 +90,20 @@
                 rowEditCheckbox = document.createElement('input'),
                 tr,
                 td,
-                addedRows = 0,
-                addedCells;
+                i = 0,
+                j;
 
             rowEditCheckbox.type = 'checkbox';
 
-            for (; addedRows < rowsToAdd; addedRows++) {
+            for (; i < rowsToAdd; i++) {
                 tr = document.createElement('tr');
 
-                for (addedCells = 0; addedCells <= cellsNumber; addedCells++) {
+                for (j = 0; j <= cellsNumber; j++) {
                     td = document.createElement('td');
                     td.setAttribute('contenteditable', 'true');
 
-                    td.innerHTML = (addedCells === 0) ? (rowData[addedCells]) : rowData[addedCells];
-                    if (addedCells === cellsNumber) {
+                    td.innerHTML = rowData[j];
+                    if (j === cellsNumber) {
                         td.innerHTML = '';
                         td.appendChild(rowEditCheckbox);
                         td.setAttribute('contenteditable', 'false');
@@ -151,9 +154,9 @@
          * Adds new row from the form
          */
         getRowDataFormTheForm: function () {
-            var rowsCount = this.model.entriesNumber;
+            var rowsNumber = this.model.entriesNumber;
             return [
-                rowsCount + 1,
+                rowsNumber + 1,
                 document.getElementById('name').value ? document.getElementById('name').value : 'Empty',
                 +document.getElementById('qtySelect').value,
                 document.getElementById('available').checked ? 'yes' : 'no'
@@ -166,6 +169,7 @@
         addRandomDataHandler: function () {
             var self = this,
                 data;
+
             this.randomDataBtn.addEventListener('click', function (e) {
                 e.preventDefault();
                 data = self.model.addRandomEntries();
@@ -182,7 +186,7 @@
         /**
          * Clears table data
          */
-        _clearTable: function () {
+        clearTable: function () {
             while (this.tableBody.firstChild) {
                 this.tableBody.removeChild(this.tableBody.firstChild);
             }
@@ -197,7 +201,7 @@
 
             this.clearDataBtn.addEventListener('click', function (e) {
                 e.preventDefault();
-                self._clearTable();
+                self.clearTable();
                 self.model.clearData();
             });
         },
@@ -255,19 +259,21 @@
          * Sorting handlers
          */
         sortByHandler: function () {
-            var self = this;
+            var self = this,
+                classNameDown = 'glyphicon glyphicon-arrow-down',
+                classNameUp = 'glyphicon glyphicon-arrow-up';
 
             this.sortByNameBtn.addEventListener('click', function (e) {
                 var element = this.getElementsByClassName('glyphicon')[0];
 
                 e.preventDefault();
 
-                if (element.getAttribute('class') === 'glyphicon glyphicon-arrow-down') {
-                    element.setAttribute('class', 'glyphicon glyphicon-arrow-up');
-                    self._sortByType('name', 'up');
+                if (element.getAttribute('class') === classNameDown) {
+                    element.setAttribute('class', classNameUp);
+                    self.sortByType('name', 'up');
                 } else {
-                    element.setAttribute('class', 'glyphicon glyphicon-arrow-down');
-                    self._sortByType('name', 'down');
+                    element.setAttribute('class', classNameDown);
+                    self.sortByType('name', 'down');
                 }
             });
 
@@ -276,12 +282,12 @@
 
                 e.preventDefault();
 
-                if (element.getAttribute('class') === 'glyphicon glyphicon-arrow-down') {
-                    element.setAttribute('class', 'glyphicon glyphicon-arrow-up');
-                    self._sortByType('id', 'up');
+                if (element.getAttribute('class') === classNameDown) {
+                    element.setAttribute('class', classNameUp);
+                    self.sortByType('id', 'up');
                 } else {
-                    element.setAttribute('class', 'glyphicon glyphicon-arrow-down');
-                    self._sortByType('id', 'down');
+                    element.setAttribute('class', classNameDown);
+                    self.sortByType('id', 'down');
                 }
             });
 
@@ -290,12 +296,12 @@
 
                 e.preventDefault();
 
-                if (element.getAttribute('class') === 'glyphicon glyphicon-arrow-down') {
-                    element.setAttribute('class', 'glyphicon glyphicon-arrow-up');
-                    self._sortByType('qty', 'up');
+                if (element.getAttribute('class') === classNameDown) {
+                    element.setAttribute('class', classNameUp);
+                    self.sortByType('qty', 'up');
                 } else {
-                    element.setAttribute('class', 'glyphicon glyphicon-arrow-down');
-                    self._sortByType('qty', 'down');
+                    element.setAttribute('class', classNameDown);
+                    self.sortByType('qty', 'down');
                 }
             });
         },
@@ -305,12 +311,12 @@
          * @param {String} type - type of sort
          * @param {String} order - sort order
          */
-        _sortByType: function (type, order) {
+        sortByType: function (type, order) {
             var self = this,
                 index,
-                sortResult = this.model._sortByType(type, order);
+                sortResult = this.model.sortByType(type, order);
 
-            this._clearTable();
+            this.clearTable();
 
             for (index in sortResult) {
                 if (sortResult.hasOwnProperty(index)) {
@@ -323,11 +329,11 @@
          * Filters table by name on fly
          */
         filterOnFly: function () {
-            var tableRows,
-                filterInputValue,
+            var rows,
+                filterInput,
                 filteredValue,
-                filteredRows,
-                tableRowsLength,
+                i,
+                rowsLength,
                 self = this;
 
             this.filterOnFlyBtn.addEventListener('keyup', function () {
@@ -335,17 +341,17 @@
                     return;
                 }
 
-                tableRows = self.tableBody.children;
-                filterInputValue = this.value.toUpperCase();
+                rows = self.tableBody.children;
+                filterInput = this.value.toUpperCase();
 
-                for (filteredRows = 0, tableRowsLength = tableRows.length; filteredRows < tableRowsLength; filteredRows++) {
+                for (i = 0, rowsLength = rows.length; i < rowsLength; i++) {
 
-                    filteredValue = tableRows[filteredRows].children[1].innerHTML.toUpperCase();
+                    filteredValue = rows[i].children[1].innerHTML.toUpperCase();
 
-                    if (filteredValue.indexOf(filterInputValue) > -1) {
-                        tableRows[filteredRows].setAttribute('class', 'visible');
+                    if (filteredValue.indexOf(filterInput) > -1) {
+                        rows[i].setAttribute('class', 'visible');
                     } else {
-                        tableRows[filteredRows].setAttribute('class', 'hidden');
+                        rows[i].setAttribute('class', 'hidden');
                     }
                 }
             });
@@ -368,16 +374,21 @@
 
         /**
          * Show/hide rows handler
-         * @param link - pagination link
          */
-        toggleRowsHandler: function (link) {
-            var self = this;
+        toggleRowsHandler: function () {
+            var self = this, target;
 
-            link.addEventListener('click', function (e) {
-                e.preventDefault();
+            this.pagerContainer.addEventListener('click', function (e) {
 
-                self.toggleRows(this.innerHTML);
-                self._makePaginationActive(this);
+                e = e || event;
+                target = e.target || e.srcElement;
+
+                if (target.nodeName !== 'A') {
+                    return;
+                }
+
+                self.toggleRows(target.innerHTML);
+                self._makePaginationActive(target);
             });
         },
 
@@ -421,10 +432,9 @@
             var container = this.pagerContainer,
                 fragment = document.createDocumentFragment(),
                 rowsNumber = this.tableBody.children.length,
-                numberOfPages = 0,
                 rowsPerPage = this.rowsPerPage,
-                createdPaginationElement,
-                createdPagesNumber,
+                i,
+                pagesNumber,
                 listElement,
                 paginationLink;
 
@@ -434,23 +444,17 @@
                 return;
             }
 
-            createdPagesNumber = rowsNumber % rowsPerPage ? Math.ceil(rowsNumber / rowsPerPage) : rowsNumber / rowsPerPage;
+            pagesNumber = rowsNumber % rowsPerPage ? Math.ceil(rowsNumber / rowsPerPage) : rowsNumber / rowsPerPage;
 
-            if (createdPagesNumber === numberOfPages) {
-                return;
-            }
-
-            for (createdPaginationElement = 0; createdPaginationElement < createdPagesNumber; createdPaginationElement++) {
+            for (i = 0; i < pagesNumber; i++) {
                 paginationLink = document.createElement('a');
-                paginationLink.innerHTML = createdPaginationElement + 1;
+                paginationLink.innerHTML = i + 1;
 
-                this.toggleRowsHandler(paginationLink);
 
                 listElement = document.createElement('li');
                 listElement.appendChild(paginationLink);
 
                 fragment.appendChild(listElement);
-                numberOfPages += 1;
             }
 
             container.innerHTML = '';
@@ -475,6 +479,7 @@
             this.sortByHandler();
             this.filterOnFly();
             this.paginationHandler();
+            this.toggleRowsHandler();
         }
     };
 
