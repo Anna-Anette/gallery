@@ -15,9 +15,12 @@
         this.clearDataBtn = data.buttons.clearDataBtn;
         this.paginateDataBtn = data.buttons.paginateDataBtn;
         this.importDataBtn = data.buttons.importDataBtn;
+
+        this.sortingRow = data.sortBtns.sortingRow;
         this.sortByNameBtn = data.sortBtns.sortByNameBtn;
         this.sortByIdBtn = data.sortBtns.sortByIdBtn;
         this.sortByQtyBtn = data.sortBtns.sortByQtyBtn;
+
         this.filterOnFlyBtn = data.sortBtns.filterOnFlyBtn;
         this.addRowContainer = data.addRowContainer;
         this.addRowForm = data.addRowForm;
@@ -28,6 +31,7 @@
         this.rowInfo = data.rowInfo;
         this.numCells = data.rowInfo.numCells;
         this.rowsPerPage = 5;
+        this.sortDirection = '';
 
     }
 
@@ -87,26 +91,38 @@
             var fragment = document.createDocumentFragment(),
                 rowsToAdd = rows ? +rows : 1,
                 cellsNumber = this.numCells,
-                rowEditCheckbox = document.createElement('input'),
+                deleteEl = document.createElement('input'),
+                editEl = document.createElement('span'),
                 tr,
                 td,
                 i = 0,
                 j;
 
-            rowEditCheckbox.type = 'checkbox';
+            deleteEl.type = 'checkbox';
+
+            editEl.setAttribute('class', 'glyphicon glyphicon-pencil');
+            editEl.setAttribute('data-edit', 'true');
 
             for (; i < rowsToAdd; i++) {
                 tr = document.createElement('tr');
 
                 for (j = 0; j <= cellsNumber; j++) {
                     td = document.createElement('td');
-                    td.setAttribute('contenteditable', 'true');
-
-                    td.innerHTML = rowData[j];
-                    if (j === cellsNumber) {
-                        td.innerHTML = '';
-                        td.appendChild(rowEditCheckbox);
+                    if (j === 0 || j === cellsNumber - 1 || j === cellsNumber) {
                         td.setAttribute('contenteditable', 'false');
+                    } else {
+                        td.setAttribute('contenteditable', 'true');
+                    }
+
+                    td.setAttribute('data-index', j + '');
+
+                    td.innerHTML = rowData[j] ? rowData[j] : '';
+
+                    if (j === cellsNumber - 1) {
+                        td.appendChild(editEl);
+                    }
+                    if (j === cellsNumber) {
+                        td.appendChild(deleteEl);
                     }
 
                     tr.appendChild(td);
@@ -117,6 +133,25 @@
             this.tableBody.appendChild(fragment);
             this.addTablePagination();
         },
+
+        editContentHandler: function () {
+            var content = this.tableBody,
+                target;
+
+            content.addEventListener('click', function (e) {
+                e = e || event;
+                target = e.target || e.srcElement;
+
+                if (!target.getAttribute('data-edit')) {
+                    return;
+                }
+
+                console.log(target.parentNode.parentNode);
+                return false;
+            });
+
+        },
+
         /**
          * Delete row handler
          *
@@ -126,11 +161,11 @@
 
             this.deleteRowBtn.addEventListener('click', function (e) {
                 e.preventDefault();
-
                 self.deleteRow();
                 self.addTablePagination();
             });
         },
+
         /**
          * Deletes row from DOM and updates data
          *
@@ -141,9 +176,7 @@
 
             rowsArray.forEach(function (row, index) {
                 if (row.lastChild.childNodes[0].checked) {
-
                     self.model.deleteEntry(index);
-
                     //remove from DOM
                     self.tableBody.removeChild(row);
                 }
@@ -173,7 +206,6 @@
             this.randomDataBtn.addEventListener('click', function (e) {
                 e.preventDefault();
                 data = self.model.addRandomEntries();
-
                 for (var index in data) {
                     if (data.hasOwnProperty(index)) {
                         self.addRow(data[index]);
@@ -191,6 +223,7 @@
                 this.tableBody.removeChild(this.tableBody.firstChild);
             }
             this.pagerContainer.innerHTML = '';
+            this._clearSortingMarks();
         },
 
         /**
@@ -214,7 +247,17 @@
                 data;
 
             this.importDataBtn.addEventListener('click', function () {
-                data = self.importDataHolder.value ? JSON.parse(self.importDataHolder.value) : '';
+                if (self.importDataHolder.value) {
+                    try {
+                        JSON.parse(self.importDataHolder.value);
+                    } catch (e) {
+                        self._showExportedTableData('Data is not valid ' + e);
+                        return;
+                    }
+                    data = JSON.parse(self.importDataHolder.value);
+                } else {
+                    return;
+                }
 
                 self.model.importTableData(data);
 
@@ -260,61 +303,69 @@
          */
         sortByHandler: function () {
             var self = this,
-                classNameDown = 'glyphicon glyphicon-arrow-down',
-                classNameUp = 'glyphicon glyphicon-arrow-up';
+                target;
 
-            this.sortByNameBtn.addEventListener('click', function (e) {
-                var element = this.getElementsByClassName('glyphicon')[0];
-
-                e.preventDefault();
-
-                if (element.getAttribute('class') === classNameDown) {
-                    element.setAttribute('class', classNameUp);
-                    self.sortByType('name', 'up');
-                } else {
-                    element.setAttribute('class', classNameDown);
-                    self.sortByType('name', 'down');
+            this.sortingRow.addEventListener('click', function (e) {
+                if (!self.model.entriesNumber) {
+                    return;
                 }
-            });
 
-            this.sortByIdBtn.addEventListener('click', function (e) {
-                var element = this.getElementsByClassName('glyphicon')[0];
+                e = e || event;
+                target = e.target || e.srcElement;
 
-                e.preventDefault();
-
-                if (element.getAttribute('class') === classNameDown) {
-                    element.setAttribute('class', classNameUp);
-                    self.sortByType('id', 'up');
-                } else {
-                    element.setAttribute('class', classNameDown);
-                    self.sortByType('id', 'down');
+                if (target.nodeName !== 'TD') {
+                    target = target.parentNode;
                 }
+
+                if (!target.getAttribute('data-sort')) {
+                    return;
+                }
+
+                self._clearSortingMarks();
+
+                self._addSortingIcon(target.firstChild.nextSibling);
+
+                self.sortCellsByType(target);
+                target.setAttribute('data-is-sorted', 'true');
+
             });
+        },
+        /**
+         * Clears sorting indicators
+         */
+        _clearSortingMarks: function () {
+            var sortingRow = Array.prototype.slice.call(this.sortingRow.children);
 
-            this.sortByQtyBtn.addEventListener('click', function (e) {
-                var element = this.getElementsByClassName('glyphicon')[0];
-
-                e.preventDefault();
-
-                if (element.getAttribute('class') === classNameDown) {
-                    element.setAttribute('class', classNameUp);
-                    self.sortByType('qty', 'up');
-                } else {
-                    element.setAttribute('class', classNameDown);
-                    self.sortByType('qty', 'down');
+            sortingRow.forEach(function (el) {
+                if (el.getAttribute('data-is-sorted')) {
+                    el.setAttribute('data-is-sorted', 'false');
                 }
             });
         },
 
         /**
-         * Sorts table according to sort type
-         * @param {String} type - type of sort
-         * @param {String} order - sort order
+         * Changes sorting arrow icon
+         * @params el - an icon element
          */
-        sortByType: function (type, order) {
+        _addSortingIcon: function (el) {
+            var classNameDown = 'glyphicon glyphicon-arrow-down',
+                classNameUp = 'glyphicon glyphicon-arrow-up';
+
+            if (el.getAttribute('class') === classNameUp) {
+                el.setAttribute('class', classNameDown);
+            } else {
+                el.setAttribute('class', classNameUp);
+            }
+        },
+
+        /**
+         * Sorts table according to sort type
+         * @param  target - type of sort
+         */
+        sortCellsByType: function (target) {
             var self = this,
                 index,
-                sortResult = this.model.sortByType(type, order);
+                sortResult = this.model.sortByType(target.getAttribute('data-sort'), +target.getAttribute('data-index'));
 
             this.clearTable();
 
@@ -408,7 +459,7 @@
 
             for (var k = startPage; k < startPage + perPage; k++) {
                 if (elementsArr[k] !== undefined) {
-                    elementsArr[k].setAttribute('class', 'visible');
+                    elementsArr[k].setAttribute('class', '');
                 }
             }
         },
@@ -480,6 +531,7 @@
             this.filterOnFly();
             this.paginationHandler();
             this.toggleRowsHandler();
+            this.editContentHandler();
         }
     };
 

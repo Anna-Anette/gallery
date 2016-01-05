@@ -3,6 +3,7 @@
     function EntriesModel() {
         this.entriesNumber = 0;
         this.dataObject = {};
+        this.direction = 'true';
     }
 
     EntriesModel.prototype = {
@@ -95,14 +96,16 @@
          * Sorts table according to sort type
          *
          * @param {String} type - type of sort
-         * @param {String} order - sort order
+         * @param {Number} sortCell - sorting cell
          * @returns {Object} - data object
          */
-        sortByType: function (type, order) {
+        sortByType: function (type, sortCell) {
             var self = this,
                 sortResult = [],
                 entries = this.dataObject,
                 sortedEntry,
+                dir = "none",
+
                 sortOrderCallback;
 
             for (sortedEntry in entries) {
@@ -111,40 +114,42 @@
                 }
             }
 
-            if (type === 'name') {
-                sortOrderCallback = function (a, b) {
-                    if (order !== 'up') {
-                        if (a[1].toLowerCase() > b[1].toLowerCase()) {
+            sortOrderCallback = function (a, b) {
+
+                if (dir === 'none') {
+                    dir = true;
+                }
+
+                if (type === 'string') {
+                    if (dir) {
+                        dir = false;
+                        if (a[sortCell].toLowerCase() > b[sortCell].toLowerCase()) {
                             return 1;
                         }
-                        if (a[1].toLowerCase() < b[1].toLowerCase()) {
+                        if (a[sortCell].toLowerCase() < b[sortCell].toLowerCase()) {
                             return -1;
                         }
                     } else {
-                        if (a[1].toLowerCase() > b[1].toLowerCase()) {
+                        dir = true;
+                        if (a[sortCell].toLowerCase() > b[sortCell].toLowerCase()) {
                             return -1;
                         }
-                        if (a[1].toLowerCase() < b[1].toLowerCase()) {
+                        if (a[sortCell].toLowerCase() < b[sortCell].toLowerCase()) {
                             return 1;
                         }
                     }
+                    dir = 'none';
+
                     return 0;
-                };
-            } else if (type === 'id') {
-                sortOrderCallback = function (a, b) {
-                    if (order !== 'up') {
-                        return a[0] - b[0];
+                } else if (type === 'number') {
+                    if (dir) {
+                        dir = false;
+                        return a[sortCell] - b[sortCell];
                     }
-                    return b[0] - a[0];
-                };
-            } else if (type === 'qty') {
-                sortOrderCallback = function (a, b) {
-                    if (order !== 'up') {
-                        return a[2] - b[2];
-                    }
-                    return b[2] - a[2];
-                };
-            }
+                    dir = true;
+                    return b[sortCell] - a[sortCell];
+                }
+            };
 
             sortResult.sort(sortOrderCallback);
 

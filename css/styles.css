@@ -514,7 +514,9 @@ label { margin-bottom: 10px; }
 
 .btn-group { margin-bottom: 15px; }
 
-.sort-by:hover { color: #5cb85c; cursor: pointer; }
+.sort-by { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+.sort-by:hover { color: #337ab7; cursor: pointer; }
+.sort-by[data-is-sorted~=true] { color: #5cb85c; }
 
 .visible { display: table-row; }
 

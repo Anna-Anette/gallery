@@ -46,27 +46,35 @@ describe("EntriesModel", function () {
     });
 
     it("should sort data by name", function () {
-        var data = tableEditor.sortByType('name');
+        var data = tableEditor.sortByType('string', 1, 'true');
 
         expect(tableEditor.dataObject).toEqual(data);
 
-        expect(tableEditor.isSorted).toBeTruthy();
+        data = tableEditor.sortByType('string', 1, 'false');
+
+        expect(tableEditor.dataObject).toEqual(data);
+
     });
 
     it("should sort data by ID", function () {
-        tableEditor.sortByType('id');
+        tableEditor.sortByType('number', 0, 'true');
 
         expect(tableEditor.dataObject).toEqual({0: row0, 1: row1});
 
-        expect(tableEditor.isSorted).toBeTruthy();
+        tableEditor.sortByType('number', 0, 'false');
+
+        expect(tableEditor.dataObject).toEqual({1: row1, 0: row0});
+
     });
 
     it("should sort data by qty", function () {
-        tableEditor.sortByType('qty');
+        tableEditor.sortByType('number', 3, 'true');
 
         expect(tableEditor.dataObject).toEqual({0: row0, 1: row1});
 
-        expect(tableEditor.isSorted).toBeTruthy();
+        tableEditor.sortByType('number', 3, 'false');
+
+        expect(tableEditor.dataObject).toEqual({1: row1, 0: row0});
     });
 
     it("should be able to add random data", function () {

@@ -29,9 +29,13 @@ label {
     margin-bottom: 15px;
 }
 .sort-by {
+    @include no-user-select;
     &:hover {
-        color: #5cb85c;
+        color: #337ab7;
         cursor: pointer;
+    }
+    &[data-is-sorted~= true]{
+        color: #5cb85c;
     }
 }
 .visible {
