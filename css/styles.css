@@ -514,9 +514,11 @@ label { margin-bottom: 10px; }
 
 .btn-group { margin-bottom: 15px; }
 
-.sort-by { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+.sort-by { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; padding-left: 25px !important; }
+.sort-by .glyphicon { visibility: hidden; }
 .sort-by:hover { color: #337ab7; cursor: pointer; }
 .sort-by[data-is-sorted~=true] { color: #5cb85c; }
+.sort-by[data-is-sorted~=true] .glyphicon { visibility: visible; }
 
 .visible { display: table-row; }
 

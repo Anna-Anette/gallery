@@ -3,7 +3,7 @@
     function EntriesModel() {
         this.entriesNumber = 0;
         this.dataObject = {};
-        this.direction = 'true';
+        this.direction = '';
     }
 
     EntriesModel.prototype = {
@@ -104,7 +104,7 @@
                 sortResult = [],
                 entries = this.dataObject,
                 sortedEntry,
-                dir = "none",
+                dir = this.direction,
 
                 sortOrderCallback;
 
@@ -116,13 +116,8 @@
 
             sortOrderCallback = function (a, b) {
 
-                if (dir === 'none') {
-                    dir = true;
-                }
-
                 if (type === 'string') {
                     if (dir) {
-                        dir = false;
                         if (a[sortCell].toLowerCase() > b[sortCell].toLowerCase()) {
                             return 1;
                         }
@@ -130,7 +125,6 @@
                             return -1;
                         }
                     } else {
-                        dir = true;
                         if (a[sortCell].toLowerCase() > b[sortCell].toLowerCase()) {
                             return -1;
                         }
@@ -138,15 +132,11 @@
                             return 1;
                         }
                     }
-                    dir = 'none';
-
                     return 0;
                 } else if (type === 'number') {
                     if (dir) {
-                        dir = false;
                         return a[sortCell] - b[sortCell];
                     }
-                    dir = true;
                     return b[sortCell] - a[sortCell];
                 }
             };

@@ -30,7 +30,7 @@
         this.randomData = data.randomData;
         this.rowInfo = data.rowInfo;
         this.numCells = data.rowInfo.numCells;
-        this.rowsPerPage = 5;
+        this.rowsPerPage = 10;
         this.sortDirection = '';
 
     }
@@ -323,7 +323,7 @@
 
                 self._clearSortingMarks();
 
-                self._addSortingIcon(target.firstChild.nextSibling);
+                self._toggleSortingIcon(target.firstChild.nextSibling);
 
                 self.sortCellsByType(target);
                 target.setAttribute('data-is-sorted', 'true');
@@ -347,14 +347,16 @@
          * Changes sorting arrow icon
          * @params el - an icon element
          */
-        _addSortingIcon: function (el) {
+        _toggleSortingIcon: function (el) {
             var classNameDown = 'glyphicon glyphicon-arrow-down',
                 classNameUp = 'glyphicon glyphicon-arrow-up';
 
             if (el.getAttribute('class') === classNameUp) {
                 el.setAttribute('class', classNameDown);
+                this.model.direction = true;
             } else {
                 el.setAttribute('class', classNameUp);
+                this.model.direction = false;
             }
         },
 
@@ -392,6 +394,8 @@
                     return;
                 }
 
+
+
                 rows = self.tableBody.children;
                 filterInput = this.value.toUpperCase();
 
@@ -404,6 +408,10 @@
                     } else {
                         rows[i].setAttribute('class', 'hidden');
                     }
+                }
+                if(this.value === '') {
+                    console.log('empty');
+                    self.addTablePagination();
                 }
             });
         },
@@ -500,7 +508,6 @@
             for (i = 0; i < pagesNumber; i++) {
                 paginationLink = document.createElement('a');
                 paginationLink.innerHTML = i + 1;
-
 
                 listElement = document.createElement('li');
                 listElement.appendChild(paginationLink);

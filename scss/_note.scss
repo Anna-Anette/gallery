@@ -30,12 +30,19 @@ label {
 }
 .sort-by {
     @include no-user-select;
+    padding-left: 25px !important;
+    .glyphicon {
+        visibility: hidden;
+    }
     &:hover {
         color: #337ab7;
         cursor: pointer;
     }
     &[data-is-sorted~= true]{
         color: #5cb85c;
+        .glyphicon {
+            visibility: visible;
+        }
     }
 }
 .visible {
