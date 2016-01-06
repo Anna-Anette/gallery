@@ -13,7 +13,6 @@
         this.randomDataBtn = data.buttons.randomDataBtn;
         this.exportDataBtn = data.buttons.exportDataBtn;
         this.clearDataBtn = data.buttons.clearDataBtn;
-        this.paginateDataBtn = data.buttons.paginateDataBtn;
         this.importDataBtn = data.buttons.importDataBtn;
 
         this.sortingRow = data.sortBtns.sortingRow;
@@ -30,9 +29,8 @@
         this.randomData = data.randomData;
         this.rowInfo = data.rowInfo;
         this.numCells = data.rowInfo.numCells;
-        this.rowsPerPage = 10;
-        this.sortDirection = '';
-
+        this.rowsPerPage = 4;
+        this.currentPage = 1;
     }
 
     TableEditor.prototype = {
@@ -53,7 +51,7 @@
          */
         toggleFormHandler: function () {
             var self = this;
-            //MOve to CSS
+
             this.showAddRowBtn.addEventListener('click', function (e) {
                 e.preventDefault();
                 if (self.addRowContainer.style.display !== 'block') {
@@ -68,13 +66,12 @@
          * A handler for "Add row" form
          */
         addNewRowHandler: function () {
-            var self = this,
-                data;
+            var self = this;
 
             this.addRowBtn.addEventListener('click', function (e) {
-                e.preventDefault();
+                var data = self.getRowDataFormTheForm();
 
-                data = self.getRowDataFormTheForm();
+                e.preventDefault();
 
                 self.model.addEntry(data);
                 self.addRow(data);
@@ -131,7 +128,7 @@
                 fragment.appendChild(tr);
             }
             this.tableBody.appendChild(fragment);
-            this.addTablePagination();
+            this.updatePagination();
         },
 
         editContentHandler: function () {
@@ -146,10 +143,8 @@
                     return;
                 }
 
-                console.log(target.parentNode.parentNode);
                 return false;
             });
-
         },
 
         /**
@@ -162,7 +157,7 @@
             this.deleteRowBtn.addEventListener('click', function (e) {
                 e.preventDefault();
                 self.deleteRow();
-                self.addTablePagination();
+                self.updatePagination();
             });
         },
 
@@ -187,9 +182,8 @@
          * Adds new row from the form
          */
         getRowDataFormTheForm: function () {
-            var rowsNumber = this.model.entriesNumber;
             return [
-                rowsNumber + 1,
+                this.model.entriesNumber + 1,
                 document.getElementById('name').value ? document.getElementById('name').value : 'Empty',
                 +document.getElementById('qtySelect').value,
                 document.getElementById('available').checked ? 'yes' : 'no'
@@ -211,19 +205,7 @@
                         self.addRow(data[index]);
                     }
                 }
-                self.addTablePagination();
             });
-        },
-
-        /**
-         * Clears table data
-         */
-        clearTable: function () {
-            while (this.tableBody.firstChild) {
-                this.tableBody.removeChild(this.tableBody.firstChild);
-            }
-            this.pagerContainer.innerHTML = '';
-            this._clearSortingMarks();
         },
 
         /**
@@ -237,6 +219,20 @@
                 self.clearTable();
                 self.model.clearData();
             });
+        },
+
+        /**
+         * Clears table data
+         */
+        clearTable: function () {
+            while (this.tableBody.firstChild) {
+                this.tableBody.removeChild(this.tableBody.firstChild);
+            }
+
+            this._clearPagerContainer();
+            this.currentPage = 1;
+
+            this._clearSortingMarks();
         },
 
         /**
@@ -266,8 +262,6 @@
                         self.addRow(data[index]);
                     }
                 }
-
-                self.addTablePagination();
             });
         },
 
@@ -327,7 +321,6 @@
 
                 self.sortCellsByType(target);
                 target.setAttribute('data-is-sorted', 'true');
-
             });
         },
         /**
@@ -354,10 +347,10 @@
             if (el.getAttribute('class') === classNameUp) {
                 el.setAttribute('class', classNameDown);
                 this.model.direction = true;
-            } else {
-                el.setAttribute('class', classNameUp);
-                this.model.direction = false;
+                return;
             }
+            el.setAttribute('class', classNameUp);
+            this.model.direction = false;
         },
 
         /**
@@ -370,7 +363,6 @@
                 sortResult = this.model.sortByType(target.getAttribute('data-sort'), +target.getAttribute('data-index'));
 
             this.clearTable();
-
             for (index in sortResult) {
                 if (sortResult.hasOwnProperty(index)) {
                     self.addRow(sortResult[index]);
@@ -394,8 +386,6 @@
                     return;
                 }
 
-
-
                 rows = self.tableBody.children;
                 filterInput = this.value.toUpperCase();
 
@@ -409,26 +399,10 @@
                         rows[i].setAttribute('class', 'hidden');
                     }
                 }
-                if(this.value === '') {
-                    console.log('empty');
-                    self.addTablePagination();
+                if (this.value === '') {
+                    self.updatePagination();
                 }
             });
-        },
-
-        /**
-         * Makes Pagination active
-         * @param [pagerElement] - a pager element
-         */
-        _makePaginationActive: function (pagerElement) {
-            var page = pagerElement ? +pagerElement.innerHTML - 1 : 0,
-                pagerElements = Array.prototype.slice.call(this.pagerContainer.children);
-
-            pagerElements.forEach(function (element) {
-                element.setAttribute('class', '');
-            });
-
-            this.pagerContainer.children[page].setAttribute('class', 'active');
         },
 
         /**
@@ -441,25 +415,67 @@
 
                 e = e || event;
                 target = e.target || e.srcElement;
-
-                if (target.nodeName !== 'A') {
+                if (target.nodeName !== 'A' ||self.currentPage === +target.innerHTML) {
                     return;
                 }
 
-                self.toggleRows(target.innerHTML);
-                self._makePaginationActive(target);
+                self.currentPage = +target.innerHTML;
+
+                self.toggleRows();
             });
+        },
+        _createPaginationElements: function (elements) {
+            var pager = this.pagerContainer,
+                fragment = document.createDocumentFragment(),
+                i,
+                pagerElement,
+                pagerLink;
+
+            for (i = 0; i < elements; i++) {
+                pagerLink = document.createElement('a');
+                pagerLink.innerHTML = i + 1;
+
+                pagerElement = document.createElement('li');
+                pagerElement.appendChild(pagerLink);
+
+                fragment.appendChild(pagerElement);
+            }
+            pager.appendChild(fragment);
         },
 
         /**
-         * Shows/hides rows
-         * @param {number} page - a page number
-         * @param {number} [rowsPerPage] - a number of rows per page
+         * Adds pagination for table
          */
-        toggleRows: function (page, rowsPerPage) {
+        updatePagination: function () {
+            var rowsNumber = this.tableBody.children.length,
+                rowsPerPage = this.rowsPerPage,
+                rowsModule = rowsNumber % rowsPerPage,
+                rowsRatio = rowsNumber / rowsPerPage,
+                pagesNumber = rowsModule ? Math.ceil(rowsRatio) : rowsRatio;
+            this._clearPagerContainer();
+
+            if (rowsNumber <= rowsPerPage) {
+                this.currentPage = 1;
+                this.toggleRows();
+                return;
+            }
+
+            this._clearPagerContainer();
+            this._createPaginationElements(pagesNumber);
+
+            if (Math.ceil(rowsRatio) <= this.currentPage) {
+                this.currentPage -=1;
+            }
+
+            this.toggleRows();
+        },
+        /**
+         * Shows/hides rows
+         */
+        toggleRows: function () {
             var elementsArr = Array.prototype.slice.call(this.tableBody.children),
-                perPage = rowsPerPage ? rowsPerPage : this.rowsPerPage,
-                startPage = (+page - 1) * perPage;
+                perPage =  this.rowsPerPage,
+                startPage = (this.currentPage - 1) * perPage ;
 
             elementsArr.forEach(function (el) {
                 el.setAttribute('class', 'hidden');
@@ -470,56 +486,31 @@
                     elementsArr[k].setAttribute('class', '');
                 }
             }
+            this._makePaginationActive();
         },
 
         /**
-         * A handler for "Paginate" button
+         * Makes Pagination active
          */
-        paginationHandler: function () {
-            var self = this;
+        _makePaginationActive: function () {
+            var pagerElements = Array.prototype.slice.call(this.pagerContainer.children);
 
-            this.paginateDataBtn.addEventListener('click', function (e) {
-                e.preventDefault();
-                self.addTablePagination();
-            });
-        },
-
-        /**
-         * Adds pagination for table
-         */
-        addTablePagination: function () {
-            var container = this.pagerContainer,
-                fragment = document.createDocumentFragment(),
-                rowsNumber = this.tableBody.children.length,
-                rowsPerPage = this.rowsPerPage,
-                i,
-                pagesNumber,
-                listElement,
-                paginationLink;
-
-            if (rowsNumber <= rowsPerPage) {
-                this.toggleRows(1);
-                container.innerHTML = '';
+            if (!pagerElements.length) {
                 return;
             }
 
-            pagesNumber = rowsNumber % rowsPerPage ? Math.ceil(rowsNumber / rowsPerPage) : rowsNumber / rowsPerPage;
+            pagerElements.forEach(function (element) {
+                element.setAttribute('class', '');
+            });
 
-            for (i = 0; i < pagesNumber; i++) {
-                paginationLink = document.createElement('a');
-                paginationLink.innerHTML = i + 1;
+            this.pagerContainer.children[this.currentPage - 1].setAttribute('class', 'active');
+        },
 
-                listElement = document.createElement('li');
-                listElement.appendChild(paginationLink);
-
-                fragment.appendChild(listElement);
-            }
-
-            container.innerHTML = '';
-            container.appendChild(fragment);
-
-            this.toggleRows(1);
-            this._makePaginationActive();
+        /**
+         * Clears Pagination Container
+         */
+        _clearPagerContainer: function () {
+            this.pagerContainer.innerHTML = '';
         },
 
         /**
@@ -536,7 +527,6 @@
 
             this.sortByHandler();
             this.filterOnFly();
-            this.paginationHandler();
             this.toggleRowsHandler();
             this.editContentHandler();
         }

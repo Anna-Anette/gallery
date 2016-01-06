@@ -46,33 +46,28 @@ describe("EntriesModel", function () {
     });
 
     it("should sort data by name", function () {
-        var data = tableEditor.sortByType('string', 1, 'true');
+        var data = tableEditor.sortByType('string', 1);
 
         expect(tableEditor.dataObject).toEqual(data);
 
-        data = tableEditor.sortByType('string', 1, 'false');
+        data = tableEditor.sortByType('string', 1);
 
         expect(tableEditor.dataObject).toEqual(data);
 
     });
 
     it("should sort data by ID", function () {
-        tableEditor.sortByType('number', 0, 'true');
+        tableEditor.sortByType('number', 0);
 
-        expect(tableEditor.dataObject).toEqual({0: row0, 1: row1});
-
-        tableEditor.sortByType('number', 0, 'false');
-
-        expect(tableEditor.dataObject).toEqual({1: row1, 0: row0});
-
+        expect(tableEditor.dataObject).toEqual({0: row1, 1: row0});
     });
 
     it("should sort data by qty", function () {
-        tableEditor.sortByType('number', 3, 'true');
+        tableEditor.sortByType('number', 3);
 
         expect(tableEditor.dataObject).toEqual({0: row0, 1: row1});
 
-        tableEditor.sortByType('number', 3, 'false');
+        tableEditor.sortByType('number', 3);
 
         expect(tableEditor.dataObject).toEqual({1: row1, 0: row0});
     });
