@@ -128,7 +128,7 @@
                 fragment.appendChild(tr);
             }
             this.tableBody.appendChild(fragment);
-            this.updatePagination();
+            this.updatePager();
         },
 
         editContentHandler: function () {
@@ -157,7 +157,7 @@
             this.deleteRowBtn.addEventListener('click', function (e) {
                 e.preventDefault();
                 self.deleteRow();
-                self.updatePagination();
+                self.updatePager();
             });
         },
 
@@ -400,7 +400,7 @@
                     }
                 }
                 if (this.value === '') {
-                    self.updatePagination();
+                    self.updatePager();
                 }
             });
         },
@@ -424,7 +424,7 @@
                 self.toggleRows();
             });
         },
-        _createPaginationElements: function (elements) {
+        _createPagerElements: function (elements) {
             var pager = this.pagerContainer,
                 fragment = document.createDocumentFragment(),
                 i,
@@ -446,7 +446,7 @@
         /**
          * Adds pagination for table
          */
-        updatePagination: function () {
+        updatePager: function () {
             var rowsNumber = this.tableBody.children.length,
                 rowsPerPage = this.rowsPerPage,
                 rowsModule = rowsNumber % rowsPerPage,
@@ -461,9 +461,9 @@
             }
 
             this._clearPagerContainer();
-            this._createPaginationElements(pagesNumber);
+            this._createPagerElements(pagesNumber);
 
-            if (Math.ceil(rowsRatio) <= this.currentPage) {
+            if (Math.ceil(rowsRatio) < this.currentPage) {
                 this.currentPage -=1;
             }
 
@@ -486,13 +486,13 @@
                     elementsArr[k].setAttribute('class', '');
                 }
             }
-            this._makePaginationActive();
+            this._makePagerActive();
         },
 
         /**
          * Makes Pagination active
          */
-        _makePaginationActive: function () {
+        _makePagerActive: function () {
             var pagerElements = Array.prototype.slice.call(this.pagerContainer.children);
 
             if (!pagerElements.length) {
